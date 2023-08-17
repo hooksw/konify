@@ -1,7 +1,11 @@
 package com.example
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlin.coroutines.RestrictsSuspension
 import kotlin.experimental.ExperimentalTypeInference
 
 interface EffectResult {
@@ -79,8 +83,8 @@ class Lifecycle {
                 }
             }
         }
-    val scope = SupervisorJob() + Dispatchers.Main.immediate
-    private val onMountList: MutableList<() -> Unit> = ArrayList(5)
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val onMountList: MutableMap<() -> Unit,> = ArrayList(5)
     private val cleanupList: MutableList<() -> Unit> = ArrayList(5)
     fun addOnMount(call: () -> Unit) {
         onMountList.add(call)
@@ -211,9 +215,13 @@ annotation class NotViewNode
 @OverloadResolutionByLambdaReturnType
 fun <T> cleanableEffect(vararg key: State<T>, effect: EffectScope.() -> EffectResult) {
     val scope = EffectScope()
-    combine(key) {
-        scope.effect()
+    currentViewNode.lifecycle.scope.launch {
+        combine(*key) {
+            scope.effect()
+        }
     }
+    var result:EffectResult?=null
+    var onStart=effect
     currentViewNode.lifecycle.addOnMount {
         val result=scope.effect()
         currentViewNode.lifecycle.addOnCleanup {
@@ -223,11 +231,17 @@ fun <T> cleanableEffect(vararg key: State<T>, effect: EffectScope.() -> EffectRe
     }
 }
 
+suspend fun <T> combine(vararg states:  State<T>, function: suspend() -> Unit) {
+    states.forEach { state->
+        state.
+    }
+}
+
 @UI
 @NotViewNode
 fun <T> createEffect(vararg key: State<T>, effect: EffectScope.() -> Unit) {
     val scope = EffectScope()
-    combine(key) {
+    combine(*key) {
         scope.effect()
     }
     currentViewNode.lifecycle.addOnMount { scope.effect() }
