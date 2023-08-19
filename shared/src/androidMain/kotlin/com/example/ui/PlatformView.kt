@@ -1,176 +1,55 @@
 package com.example.ui
 
+import android.app.Activity
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import com.example.ui.base.Color
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.TextView
 
-actual typealias PlatformView = View
-
-
-actual open class BaseView {
-    actual open val ele: PlatformView = View(AndroidContext)
-
-    
-    actual fun width(float: Float) {
-        ele.layoutParams = ele.layoutParams.apply {
-            width = dp2px(float)
-        }
+actual class PlatformView(private val view: View) {
+    actual fun addChild(platformView: PlatformView) {
+        (view as ViewGroup).addView(platformView.view)
+        Log.e("PlatformView","$view add ${platformView.view}")
     }
 
-    
-    actual fun height(float: Float) {
-        ele.layoutParams = ele.layoutParams.apply {
-            height = dp2px(float)
-        }
+    actual fun removeChild(platformView: PlatformView) {
+        (view as ViewGroup).addView(platformView.view)
     }
 
-    
-    actual fun marginTop(float: Float) {
-        ele.layoutParams = (ele.layoutParams as ViewGroup.MarginLayoutParams).apply {
-            topMargin = dp2px(float)
-        }
-    }
+}
 
-    
-    actual fun marginBottom(float: Float) {
-        ele.layoutParams = (ele.layoutParams as ViewGroup.MarginLayoutParams).apply {
-            bottomMargin = dp2px(float)
-        }
-    }
+@ViewMarker
+actual fun Text(viewNode: ViewNode, text: String) {
+    val node = viewNode.newNode()
+    node.registerNativeView(PlatformView(TextView(AndroidContext).apply {
+        setText(text)
+    }))
+}
 
-    
-    actual fun marginLeft(float: Float) {
-        ele.layoutParams = (ele.layoutParams as ViewGroup.MarginLayoutParams).apply {
-            leftMargin = dp2px(float)
-        }
-    }
+@ViewMarker
+actual fun Row(
+    viewNode: ViewNode,
+    children: @ViewMarker (ViewNode) -> Unit
+) {
+    val node = viewNode.newNode()
+    node.registerNativeView(PlatformView(LinearLayout(AndroidContext).apply {
+        this.orientation = LinearLayout.HORIZONTAL
+    }))
+    children(node)
+}
 
-    
-    actual fun marginRight(float: Float) {
-        ele.layoutParams = (ele.layoutParams as ViewGroup.MarginLayoutParams).apply {
-            rightMargin = dp2px(float)
-        }
+fun Activity.host(children: @ViewMarker (ViewNode) -> Unit) {
+    val frameLayout = FrameLayout(AndroidContext).apply {
+        layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
     }
-
-    
-    actual fun paddingTop(float: Float) {
-        ele.apply {
-            setPadding(paddingLeft, dp2px(float), paddingRight, paddingBottom)
-        }
-    }
-
-    
-    actual fun paddingBottom(float: Float) {
-        ele.apply {
-            setPadding(paddingLeft, paddingTop, paddingRight, dp2px(float))
-        }
-    }
-
-    
-    actual fun paddingLeft(float: Float) {
-        ele.apply {
-            setPadding(dp2px(float), paddingTop, paddingRight, paddingBottom)
-        }
-    }
-
-    
-    actual fun paddingRight(float: Float) {
-        ele.apply {
-            setPadding(paddingLeft, paddingTop, paddingEnd, paddingBottom)
-        }
-    }
-
-    actual fun widthMathParent() {
-        ele.layoutParams = ele.layoutParams.apply {
-            width = ViewGroup.LayoutParams.MATCH_PARENT
-        }
-    }
-
-    actual fun widthWrapContent() {
-        ele.layoutParams = ele.layoutParams.apply {
-            width = ViewGroup.LayoutParams.WRAP_CONTENT
-        }
-    }
-
-    actual fun heightMathParent() {
-        ele.layoutParams = ele.layoutParams.apply {
-            height = ViewGroup.LayoutParams.MATCH_PARENT
-        }
-    }
-
-    actual fun heightWrapContent() {
-        ele.layoutParams = ele.layoutParams.apply {
-            height = ViewGroup.LayoutParams.WRAP_CONTENT
-        }
-    }
-
-    
-    actual fun marginVertical(float: Float) {
-    }
-
-    
-    actual fun marginHorizontal(float: Float) {
-    }
-
-    
-    actual fun paddingVertical(float: Float) {
-    }
-
-    
-    actual fun paddingHorizontal(float: Float) {
-    }
-
-    
-    actual fun margin(float: Float) {
-    }
-
-    
-    actual fun padding(float: Float) {
-    }
-
-    
-    actual fun radius(int: Int) {
-    }
-
-    
-    actual fun radiusLeftTop(int: Int) {
-    }
-
-    
-    actual fun radiusRightTop(int: Int) {
-    }
-
-    
-    actual fun radiusRightBottom(int: Int) {
-    }
-
-    
-    actual fun radiusLeftBottom(int: Int) {
-    }
-
-    actual fun stroke(dashWith: Int?, color: Color) {
-    }
-
-    actual fun backgroundBlurExceptAndroid(int: Int) {
-    }
-
-    actual fun dropShadow(int: Int) {
-    }
-
-    
-    actual fun rotation(int: Int) {
-    }
-
-    
-    actual fun scale(float: Float) {
-    }
-
-    
-    actual fun transitionX(float: Float) {
-    }
-
-    
-    actual fun transitionY(float: Float) {
-    }
-
+    val node = ViewNode.empty()
+    frameLayout.tag=node
+    node.registerNativeView(PlatformView(frameLayout))
+    children(node)
+    setContentView(frameLayout)
 }
