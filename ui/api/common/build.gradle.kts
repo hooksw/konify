@@ -1,3 +1,9 @@
-dependencies {
-    api(project(":api:foundation"))
+kotlin {
+    sourceSets {
+        getByName("commonMain") {
+            dependencies {
+                api(project(":api:foundation"))
+            }
+        }
+    }
 }

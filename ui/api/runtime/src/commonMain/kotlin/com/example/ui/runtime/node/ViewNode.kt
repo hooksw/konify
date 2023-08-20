@@ -6,7 +6,9 @@ import com.example.ui.runtime.state.State
 sealed interface ViewNode {
     // -------- Hierarchy --------
 
-    fun createChildNode(): ViewNode
+    fun createChild(): ViewNode
+
+    fun removeAllChildren()
 
     // -------- Platform --------
 

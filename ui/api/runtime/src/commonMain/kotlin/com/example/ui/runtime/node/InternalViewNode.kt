@@ -13,11 +13,16 @@ internal class InternalViewNode : ViewNode {
 
     private val children: MutableList<InternalViewNode> = ArrayList(4)
 
-    override fun createChildNode(): InternalViewNode {
+    override fun createChild(): InternalViewNode {
         val child = InternalViewNode()
         children.add(child)
         child.parent = this
         return child
+    }
+
+    override fun removeAllChildren() {
+        children.forEach { it.dispose() }
+        children.clear()
     }
 
     // -------- Platform --------
@@ -50,14 +55,35 @@ internal class InternalViewNode : ViewNode {
     private val callbacksOnDisposed: MutableList<() -> Unit> = ArrayList(2)
 
     override fun prepare() {
+        if (state >= Prepared) {
+            error("This ViewNode is already prepared.")
+        }
+        callbacksOnPrepared.forEach { it.invoke() }
+        callbacksOnPrepared.clear()
         state = Prepared
     }
 
-    fun dispose() {
+    private fun dispose() {
+        if (state == Disposed) {
+            error("This ViewNode is already disposed.")
+        }
+        providedViewLocals.clear()
+        removeAllChildren()
+        val platformView = platformView
+        if (platformView != null) {
+            findParentPlatformView()?.removeChild(platformView)
+            this.platformView = null
+        }
+        parent = null
+        callbacksOnDisposed.forEach { it.invoke() }
+        callbacksOnDisposed.clear()
         state = Disposed
     }
 
     override fun onPrepared(block: () -> Unit) {
+        if (state >= Prepared) {
+            error("Cannot schedule callback after prepared.")
+        }
         if (block in callbacksOnPrepared) {
             return
         }
@@ -65,6 +91,9 @@ internal class InternalViewNode : ViewNode {
     }
 
     override fun onDispose(block: () -> Unit) {
+        if (state == Disposed) {
+            error("Cannot schedule callback after disposed.")
+        }
         if (block in callbacksOnDisposed) {
             return
         }

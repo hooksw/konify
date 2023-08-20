@@ -7,7 +7,7 @@ import com.example.ui.runtime.annotation.ReadOnlyView
 import com.example.ui.runtime.injected
 import com.example.ui.runtime.node.InternalViewNode
 
-fun Activity.host(children: @ReadOnlyView () -> Unit) {
+fun Activity.setContent(children: @ReadOnlyView () -> Unit) {
     val root = InternalViewNode()
     val frameLayout = FrameLayout(this).apply {
         layoutParams = ViewGroup.LayoutParams(

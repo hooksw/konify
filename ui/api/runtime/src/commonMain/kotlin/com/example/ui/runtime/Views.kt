@@ -10,7 +10,7 @@ fun View(
     factory: () -> PlatformView
 ) {
     // Create child node.
-    val node = currentViewNode.createChildNode()
+    val node = currentViewNode.createChild()
     // Run factory.
     val platformView = factory()
     node.registerPlatformView(platformView)

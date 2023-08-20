@@ -2,9 +2,14 @@ package com.example.ui.runtime
 
 import com.example.ui.runtime.annotation.ReadOnlyView
 import com.example.ui.runtime.state.State
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 @ReadOnlyView
-fun Effect(
+fun SideEffect(
     vararg keys: State<*>,
     effect: () -> Unit
 ) {
@@ -33,6 +38,28 @@ fun DisposableEffect(
     for (key in keys) {
         key.bind {
             handle = effect()
+        }
+    }
+}
+
+@ReadOnlyView
+fun LaunchedEffect(
+    vararg keys: State<*>,
+    effect: suspend CoroutineScope.() -> Unit
+) {
+    val node = currentViewNode
+    val scope = CoroutineScope(Dispatchers.Main.immediate)
+    var job: Job? = null
+    node.onPrepared {
+        job = scope.launch(block = effect)
+    }
+    node.onDispose {
+        job?.cancel()
+    }
+    for (key in keys) {
+        key.bind {
+            job?.cancel()
+            job = scope.launch(block = effect)
         }
     }
 }

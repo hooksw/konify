@@ -1,20 +1,21 @@
 package com.example.ui.runtime
 
 import com.example.ui.runtime.annotation.ReadOnlyView
+import com.example.ui.runtime.annotation.View
 import com.example.ui.runtime.node.ViewNode
 import com.example.ui.runtime.state.State
 
 sealed interface SwitchScope {
     fun If(
         condition: State<Boolean>,
-        block: @ReadOnlyView () -> Unit
+        block: @View () -> Unit
     )
 
-    fun Else(block: @ReadOnlyView () -> Unit)
+    fun Else(block: @View () -> Unit)
 }
 
 @ReadOnlyView
-inline fun Switch(function: SwitchScope.() -> Unit) {
+inline fun Switch(crossinline function: SwitchScope.() -> Unit) {
     val node = currentViewNode
     val scope = SwitchScopeImpl(node)
     scope.function()
@@ -27,27 +28,49 @@ inline fun Switch(function: SwitchScope.() -> Unit) {
 internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
     private var prepared: Boolean = false
 
-    private val ifBlocks: MutableList<Pair<State<Boolean>, @ReadOnlyView () -> Unit>> = ArrayList(2)
+    private val ifConditions: MutableList<State<Boolean>> = ArrayList(2)
 
-    private var elseBlock: (@ReadOnlyView () -> Unit)? = null
+    private val ifBlocks: MutableList<@View () -> Unit> = ArrayList(2)
+
+    private var elseBlock: (@View () -> Unit)? = null
+
+    private var lastCondition: State<Boolean>? = null
 
     fun prepare() {
-        ifBlocks.forEach { (condition, block) ->
-            condition.bind { current ->
-
-            }
+        for (condition in ifConditions) {
+            condition.bind { notify() }
         }
+        notify()
         prepared = true
     }
 
-    override fun If(condition: State<Boolean>, block: @ReadOnlyView () -> Unit) {
+    private fun notify() {
+        val lastCondition = lastCondition
+        for (condition in ifConditions) {
+            if (condition.value.not()) {
+                continue
+            }
+            if (condition != lastCondition) {
+                val index = ifConditions.indexOf(lastCondition)
+                // TODO
+            }
+            return
+        }
+        val elseBlock = elseBlock
+        if (elseBlock != null) {
+            injected(node, elseBlock)
+        }
+    }
+
+    override fun If(condition: State<Boolean>, block: @View () -> Unit) {
         if (prepared) {
             error("Cannot add more blocks after prepared.")
         }
-        ifBlocks.add(condition to block)
+        ifConditions.add(condition)
+        ifBlocks.add(block)
     }
 
-    override fun Else(block: @ReadOnlyView () -> Unit) {
+    override fun Else(block: @View () -> Unit) {
         if (prepared) {
             error("Cannot add more blocks after prepared.")
         }

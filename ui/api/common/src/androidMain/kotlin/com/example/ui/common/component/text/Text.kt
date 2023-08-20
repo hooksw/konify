@@ -12,7 +12,7 @@ actual fun Text(
     text: String
 ) {
     // Create child node.
-    val node = currentViewNode.createChildNode()
+    val node = currentViewNode.createChild()
     // Run custom block.
     val textView = createTextView(
         text = text
