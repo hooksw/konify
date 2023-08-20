@@ -1,6 +1,5 @@
 package com.example.ui.runtime
 
-import com.example.ui.runtime.annotation.ReadOnlyView
 import com.example.ui.runtime.annotation.View
 import com.example.ui.runtime.node.ViewNode
 import com.example.ui.runtime.state.State
@@ -14,7 +13,7 @@ sealed interface SwitchScope {
     fun Else(block: @View () -> Unit)
 }
 
-@ReadOnlyView
+@View
 inline fun Switch(crossinline function: SwitchScope.() -> Unit) {
     val node = currentViewNode
     val scope = SwitchScopeImpl(node)
@@ -40,7 +39,9 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
         for (condition in ifConditions) {
             condition.bind { notify() }
         }
-        notify()
+        node.onPrepared {
+            notify()
+        }
         prepared = true
     }
 
@@ -51,13 +52,19 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
                 continue
             }
             if (condition != lastCondition) {
-                val index = ifConditions.indexOf(lastCondition)
-                // TODO
+                node.removeAllChildren()
+                this.lastCondition = condition
+                val currentConditionIndex = ifConditions.indexOf(condition)
+                injected(node, ifBlocks[currentConditionIndex])
             }
             return
         }
         val elseBlock = elseBlock
         if (elseBlock != null) {
+            if (lastCondition != null) {
+                node.removeAllChildren()
+                this.lastCondition = null
+            }
             injected(node, elseBlock)
         }
     }
