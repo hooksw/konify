@@ -1,0 +1,29 @@
+# Gradle
+
+.gradle/
+**/build/
+out/
+classes/
+
+# Eclipse
+
+*.launch
+
+# IDEA
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VSCode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# MacOS
+
+.DS_Store/
