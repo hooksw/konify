@@ -73,7 +73,7 @@ allprojects {
 
     android {
         namespace = "com.example.ui.api"
-        compileSdk = 32
+        compileSdk = 33
 
         defaultConfig {
             minSdk = 26

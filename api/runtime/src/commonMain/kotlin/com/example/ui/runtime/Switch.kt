@@ -37,15 +37,15 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
 
     fun prepare() {
         for (condition in ifConditions) {
-            condition.bind { notify() }
+            condition.bind { notifyChange() }
         }
         node.onPrepared {
-            notify()
+            notifyChange()
         }
         prepared = true
     }
 
-    private fun notify() {
+    private fun notifyChange() {
         val lastCondition = lastCondition
         for (condition in ifConditions) {
             if (condition.value.not()) {
