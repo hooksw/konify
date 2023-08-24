@@ -1,6 +1,7 @@
 package io.github.hooksw.konify.runtime.node
 
 import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
+import io.github.hooksw.konify.runtime.annotation.View
 import io.github.hooksw.konify.runtime.currentViewNode
 import io.github.hooksw.konify.runtime.state.State
 import io.github.hooksw.konify.runtime.state.mutableStateOf
@@ -38,7 +39,7 @@ infix fun <T> ViewLocal<T>.provides(state: State<T>): ProvidedViewLocal<T> {
 @ReadOnlyView
 fun ViewLocalProvider(
     vararg locals: ProvidedViewLocal<*>,
-    block: @ReadOnlyView () -> Unit
+    block: @View () -> Unit
 ) {
     val node = currentViewNode
     for (local in locals) {

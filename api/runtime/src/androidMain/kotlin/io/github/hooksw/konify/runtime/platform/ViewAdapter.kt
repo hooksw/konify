@@ -3,12 +3,11 @@ package io.github.hooksw.konify.runtime.platform
 import android.app.Activity
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
+import io.github.hooksw.konify.runtime.annotation.View
 import io.github.hooksw.konify.runtime.injected
 import io.github.hooksw.konify.runtime.node.InternalViewNode
-import io.github.hooksw.konify.runtime.platform.PlatformView
 
-fun Activity.setContent(children: @ReadOnlyView () -> Unit) {
+fun Activity.setContent(children: @View () -> Unit) {
     val root = InternalViewNode()
     val frameLayout = FrameLayout(this).apply {
         layoutParams = ViewGroup.LayoutParams(

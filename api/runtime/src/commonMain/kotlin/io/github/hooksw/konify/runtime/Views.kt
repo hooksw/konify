@@ -19,12 +19,13 @@ fun View(
 }
 
 val currentViewNode: ViewNode
+
     @ReadOnlyView
     get() = throw NotImplementedError("Implemented as intrinsic.")
 
 inline fun injected(
     node: ViewNode,
-    block: @ReadOnlyView () -> Unit
+    block: @View () -> Unit
 ) {
     throw NotImplementedError("Implemented as intrinsic.")
 }

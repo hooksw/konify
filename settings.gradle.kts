@@ -19,7 +19,7 @@ dependencyResolutionManagement {
 include(":api")
 include(":api:runtime")
 include(":api:foundation")
-include(":api:common")
+include(":api:ui")
 
 include(":compiler")
 

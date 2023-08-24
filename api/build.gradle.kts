@@ -84,5 +84,5 @@ allprojects {
 dependencies {
     api(project(":api:runtime"))
     api(project(":api:foundation"))
-    api(project(":api:common"))
+ api(project(":api:ui"))
 }

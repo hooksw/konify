@@ -1,7 +1,7 @@
 package io.github.hooksw.konify.common.component.text
 
+import android.content.Context
 import android.widget.TextView
-import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
 import io.github.hooksw.konify.runtime.annotation.View
 import io.github.hooksw.konify.runtime.currentViewNode
 import io.github.hooksw.konify.runtime.platform.LocalContext
@@ -14,7 +14,9 @@ actual fun Text(
     // Create child node.
     val node = currentViewNode.createChild()
     // Run custom block.
+    val context = LocalContext.current.value
     val textView = createTextView(
+        context,
         text = text
     )
     node.registerPlatformView(textView)
@@ -24,9 +26,7 @@ actual fun Text(
 
 // -------- Internal --------
 
-@ReadOnlyView
-private fun createTextView(text: String): PlatformView {
-    val context = LocalContext.current.value
+private fun createTextView(context: Context, text: String): PlatformView {
     val view = TextView(context).apply {
         setText(text)
     }

@@ -2,6 +2,7 @@ package io.github.hooksw.konify.runtime.platform
 
 import android.content.Context
 import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
+import io.github.hooksw.konify.runtime.annotation.View
 import io.github.hooksw.konify.runtime.node.ViewLocal
 import io.github.hooksw.konify.runtime.node.ViewLocalProvider
 import io.github.hooksw.konify.runtime.node.provides
@@ -14,7 +15,7 @@ val LocalContext: ViewLocal<Context> = viewLocalOf { late("Context") }
 @ReadOnlyView
 internal fun ProvideIntrinsicLocals(
     context: Context,
-    block: @ReadOnlyView () -> Unit
+    block: @View () -> Unit
 ) {
     ViewLocalProvider(
         LocalContext provides context,
