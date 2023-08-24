@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ui.sample.android"
+    namespace = "io.github.hooksw.konify.sample.android"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.ui.sample.android"
+        applicationId = "io.github.hooksw.konify.sample.android"
         minSdk = 26
         targetSdk = 32
         versionCode = 1
