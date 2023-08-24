@@ -49,7 +49,7 @@ fun Counter() {
 }
 ```
 
-* How it works?
+#### How it works?
 
 ```kotlin
 @View
@@ -71,14 +71,14 @@ fun A(params: State<Int>, $node: ViewNode) {
 `ViewNode` is a wrapper for native UI elements(in Android, it wraps `View`, in Web,it wraps `HtmlElement`)
 You can see a annotated function as a ViewNode tree builder.
 
-* State
+#### State
 
 As we only build the UI once, there's no recomposition.
 So we have to declare all state that may change with `State<XXX>`,including state and function parameter
 `mutableStateOf` create a mutable State like,
 `stateOf` create a state that is readonly, it just is used to match the State type
 
-* Effect
+#### Effect
 we provide 2 functions to manage effects
 `LaunchEffect` receive a list of states(can be empty) and a suspend callback, when one of the states changes, the callback is invoked and previous job will be cancel
 ```kotlin
@@ -97,7 +97,7 @@ DisposableEffect(state){
 }
 ```
 
-* Control Flow
+#### Control Flow
 
 in Compose, we can do something like:
 ```kotlin
@@ -131,7 +131,7 @@ Switch {
 `If` receive a State<Boolean> state and a` @View ()->Unit ` callback.
 in the code above, when one of stateA,stateB,stateC changes, `Switch` will check the state in order of declaration, the first callback that state value is `true when will execute.
 
-* ViewLocal
+#### ViewLocal
 If you are familiar with Compose, you must know `CompositionLocal`.in Konify ,it's `ViewLocal`.
 The main difference of usage is that the value of ViewLocal should be a State type, even if it won't be changed, it's a design compromise.
 You can use it like:
@@ -167,7 +167,7 @@ fun C(){
   
 }
 ```
-* How to Wrap Native View
+#### How to Wrap Native View
 
 first we declare a expect function, for Example,Text()
 ```kotlin
@@ -191,13 +191,13 @@ actual fun Text(
 }
 ```
 
-* Modifier
+#### Modifier
 We haven't decide how to design the Modifier system.
 
-* Supported Platform
+### Supported Platform
 We plan to support Android and Web dom first.
 
-* About IOS?
+### About IOS?
 The Author doesn't have a job and is too poor to buy a Mac, if you are interested in this project, welcome to contribute.
 
 [compose]: https://developer.android.com/jetpack/compose
