@@ -198,7 +198,7 @@ We haven't decide how to design the Modifier system.
 We plan to support Android and Web dom first.
 
 ### About IOS?
-The Author doesn't have a job and is too poor to buy a Mac, if you are interested in this project, welcome to contribute.
+The author doesn't have a job and is too poor to buy a Mac, if you are interested in this project, welcome to contribute.
 
 [compose]: https://developer.android.com/jetpack/compose
 
