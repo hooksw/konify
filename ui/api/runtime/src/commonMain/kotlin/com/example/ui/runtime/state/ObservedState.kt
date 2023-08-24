@@ -24,4 +24,8 @@ internal class ObservedState<T>(
     override fun bind(observer: Observer<T>) {
         observers.add(observer)
     }
+
+    override fun unbind(observer: Observer<T>) {
+        observers.remove(observer)
+    }
 }

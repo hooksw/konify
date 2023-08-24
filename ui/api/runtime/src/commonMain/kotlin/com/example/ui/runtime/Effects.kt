@@ -2,6 +2,7 @@ package com.example.ui.runtime
 
 import com.example.ui.runtime.annotation.ReadOnlyView
 import com.example.ui.runtime.state.State
+import com.example.ui.runtime.state.bindWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,7 +17,7 @@ fun SideEffect(
     val node = currentViewNode
     node.onPrepared(effect)
     for (key in keys) {
-        key.bind {
+        key.bindWithLifecycle {
             effect()
         }
     }
@@ -36,7 +37,7 @@ fun DisposableEffect(
         handle?.onDispose()
     }
     for (key in keys) {
-        key.bind {
+        key.bindWithLifecycle {
             handle = effect()
         }
     }
@@ -57,7 +58,7 @@ fun LaunchedEffect(
         job?.cancel()
     }
     for (key in keys) {
-        key.bind {
+        key.bindWithLifecycle {
             job?.cancel()
             job = scope.launch(block = effect)
         }

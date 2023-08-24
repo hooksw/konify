@@ -25,6 +25,8 @@ inline fun Switch(crossinline function: SwitchScope.() -> Unit) {
 
 @PublishedApi
 internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
+    private val notifyObserver: (Any?) -> Unit = { notify() }
+
     private var prepared: Boolean = false
 
     private val ifConditions: MutableList<State<Boolean>> = ArrayList(2)
@@ -37,11 +39,10 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
 
     fun prepare() {
         for (condition in ifConditions) {
-            condition.bind { notify() }
+            condition.bind(notifyObserver)
         }
-        node.onPrepared {
-            notify()
-        }
+        node.onPrepared(this::notify)
+        node.onDispose(this::dispose)
         prepared = true
     }
 
@@ -66,6 +67,12 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
                 this.lastCondition = null
             }
             injected(node, elseBlock)
+        }
+    }
+
+    private fun dispose() {
+        for (condition in ifConditions) {
+            condition.unbind(notifyObserver)
         }
     }
 
