@@ -30,24 +30,30 @@ import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
 
-fun validateIr(fragment: IrModuleFragment, irBuiltIns: IrBuiltIns) {
+fun validateIr(
+    fragment: IrModuleFragment,
+    irBuiltIns: IrBuiltIns
+) {
     val validatorConfig = IrValidatorConfig(
         abortOnError = true,
         ensureAllNodesAreDifferent = true,
-        checkTypes = false, // This should be enabled, the fact this doesn't work is a Compose bug.
+        checkTypes = false, // This should be enabled.
         checkDescriptors = false,
         checkProperties = true,
         checkScopes = false
     )
-    fragment.accept(IrValidator(irBuiltIns, validatorConfig), null)
+    val validator = IrValidator(irBuiltIns, validatorConfig)
+    fragment.accept(validator, data = null)
     fragment.checkDeclarationParents()
 }
 
-// TODO: Replace with IrValidator validator when upstream is compatible with PluginContext
-class IrValidator(val irBuiltIns: IrBuiltIns, val config: IrValidatorConfig) :
-    IrElementVisitorVoid {
+class IrValidator(
+    irBuiltIns: IrBuiltIns,
+    private val config: IrValidatorConfig
+) : IrElementVisitorVoid {
+    private var currentFile: IrFile? = null
 
-    var currentFile: IrFile? = null
+    private val elementChecker = CheckIrElementVisitor(irBuiltIns, this::error, config)
 
     override fun visitFile(declaration: IrFile) {
         currentFile = declaration
@@ -57,17 +63,18 @@ class IrValidator(val irBuiltIns: IrBuiltIns, val config: IrValidatorConfig) :
         }
     }
 
-    private fun error(element: IrElement, message: String) {
-        throw Error(
-            "Validation error ($message) for ${element.dumpSrc()}...  ${element.render()} in" +
-                " ${currentFile?.name ?: "???"}"
-        )
-    }
-
-    private val elementChecker = CheckIrElementVisitor(irBuiltIns, this::error, config)
-
     override fun visitElement(element: IrElement) {
         element.acceptVoid(elementChecker)
         element.acceptChildrenVoid(this)
+    }
+
+    private fun error(
+        element: IrElement,
+        message: String
+    ) {
+        val currentFileName = currentFile?.name ?: "???"
+        val errorMessage = "Validation error ($message) for ${element.dumpSrc()}... " +
+                "${element.render()} in $currentFileName."
+        throw Error(errorMessage)
     }
 }

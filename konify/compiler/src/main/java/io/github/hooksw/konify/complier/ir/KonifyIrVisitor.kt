@@ -18,20 +18,7 @@ package io.github.hooksw.konify.complier.ir
 
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
-import org.jetbrains.kotlin.ir.IrStatement
-import org.jetbrains.kotlin.ir.builders.declarations.addValueParameter
-import org.jetbrains.kotlin.ir.declarations.IrFunction
 
-class KonifyrIrVisitor(
-    val context: IrPluginContext,
-) : IrElementTransformerVoidWithContext() {
-
-
-    override fun visitFunctionNew(declaration: IrFunction): IrStatement {
-        declaration.addValueParameter(
-            "\$viewNode",
-        )
-        return super.visitFunctionNew(declaration)
-    }
-
-}
+class KonifyIrVisitor(
+    private val context: IrPluginContext
+) : IrElementTransformerVoidWithContext()

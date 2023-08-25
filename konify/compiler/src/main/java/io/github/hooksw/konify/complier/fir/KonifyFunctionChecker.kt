@@ -26,8 +26,6 @@ import org.jetbrains.kotlin.fir.declarations.getSingleCompatibleExpectForActualO
 import org.jetbrains.kotlin.fir.declarations.utils.isAbstract
 import org.jetbrains.kotlin.fir.declarations.utils.isOperator
 import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
-import org.jetbrains.kotlin.fir.declarations.utils.nameOrSpecialName
-import org.jetbrains.kotlin.util.OperatorNameConventions
 
 object KonifyFunctionChecker : FirFunctionChecker() {
     override fun check(
@@ -36,59 +34,57 @@ object KonifyFunctionChecker : FirFunctionChecker() {
         reporter: DiagnosticReporter
     ) {
         val isKonify = declaration.hasKonifyAnnotation(context.session)
-
-        // Check overrides for mismatched composable annotations
         for (override in declaration.getDirectOverriddenFunctions(context)) {
             if (override.isKonify(context.session) != isKonify) {
                 reporter.reportOn(
-                    declaration.source,
-                    FirErrors.CONFLICTING_OVERLOADS,
-                    listOf(declaration.symbol, override),
-                    context
-                )
-            }
-
-            // TODO(b/282135108): Check scheme of override against declaration
-        }
-
-        // Check that `actual` composable declarations have composable expects
-        declaration.symbol.getSingleCompatibleExpectForActualOrNull()?.let { expectDeclaration ->
-            if (expectDeclaration.hasKonifyAnnotation(context.session) != isKonify) {
-                reporter.reportOn(
-                    declaration.source,
-                    KonifyErrors.MISMATCHED_COMPOSABLE_IN_EXPECT_ACTUAL,
-                    context
+                    source = declaration.source,
+                    factory = FirErrors.CONFLICTING_OVERLOADS,
+                    a = listOf(declaration.symbol, override),
+                    context = context
                 )
             }
         }
-
-        if (!isKonify) return
-
-        // Konify suspend functions are unsupported
+        val expectDeclaration = declaration.symbol.getSingleCompatibleExpectForActualOrNull()
+        if (expectDeclaration != null && expectDeclaration.hasKonifyAnnotation(context.session) != isKonify) {
+            reporter.reportOn(
+                source = declaration.source,
+                factory = ComposableErrors.MISMATCHED_COMPOSABLE_IN_EXPECT_ACTUAL,
+                context = context
+            )
+        }
+        if (!isKonify) {
+            return
+        }
         if (declaration.isSuspend) {
-            reporter.reportOn(declaration.source, KonifyErrors.COMPOSABLE_SUSPEND_FUN, context)
+            reporter.reportOn(
+                source = declaration.source,
+                factory = ComposableErrors.COMPOSABLE_SUSPEND_FUN,
+                context = context
+            )
         }
-
-        // Check that there are no default arguments in abstract composable functions
         if (declaration.isAbstract) {
             for (valueParameter in declaration.valueParameters) {
                 val defaultValue = valueParameter.defaultValue ?: continue
                 reporter.reportOn(
-                    defaultValue.source,
-                    KonifyErrors.ABSTRACT_COMPOSABLE_DEFAULT_PARAMETER_VALUE,
-                    context
+                    source = defaultValue.source,
+                    factory = ComposableErrors.ABSTRACT_COMPOSABLE_DEFAULT_PARAMETER_VALUE,
+                    context = context
                 )
             }
         }
-
-        // Konify main functions are not allowed.
         if (declaration.symbol.isMain(context.session)) {
-            reporter.reportOn(declaration.source, KonifyErrors.COMPOSABLE_FUN_MAIN, context)
+            reporter.reportOn(
+                source = declaration.source,
+                factory = ComposableErrors.COMPOSABLE_FUN_MAIN,
+                context = context
+            )
         }
-
-        // Disallow composable setValue operators
         if (declaration.isOperator) {
-            reporter.reportOn(declaration.source, KonifyErrors.COMPOSE_INVALID_DELEGATE, context)
+            reporter.reportOn(
+                source = declaration.source,
+                factory = ComposableErrors.COMPOSE_INVALID_DELEGATE,
+                context = context
+            )
         }
     }
 }

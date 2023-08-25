@@ -1,7 +1,7 @@
 package io.github.hooksw.konify.runtime.state
 
-import com.example.ui.runtime.annotation.ReadOnlyView
-import com.example.ui.runtime.currentViewNode
+import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
+import io.github.hooksw.konify.runtime.currentViewNode
 import kotlin.reflect.KProperty
 
 interface State<out T> {

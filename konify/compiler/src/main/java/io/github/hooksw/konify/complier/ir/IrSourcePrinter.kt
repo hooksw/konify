@@ -16,7 +16,7 @@
 
 package io.github.hooksw.konify.complier.ir
 
-import io.github.hooksw.konify.complier.KonifyClassIds
+import io.github.hooksw.konify.complier.KonifyIds
 import org.jetbrains.kotlin.com.intellij.openapi.progress.ProcessCanceledException
 import java.util.Locale
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
@@ -91,7 +91,6 @@ import org.jetbrains.kotlin.ir.expressions.IrVararg
 import org.jetbrains.kotlin.ir.expressions.IrWhen
 import org.jetbrains.kotlin.ir.expressions.IrWhileLoop
 import org.jetbrains.kotlin.ir.expressions.impl.IrIfThenElseImpl
-import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrReturnTargetSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeAliasSymbol
 import org.jetbrains.kotlin.ir.types.IrDynamicType
@@ -121,7 +120,6 @@ import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.ir.util.statements
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptVoid
-import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.types.Variance
 import org.jetbrains.kotlin.utils.Printer
@@ -160,6 +158,7 @@ class IrSourcePrinterVisitor(
     private fun IrElement.print() {
         accept(this@IrSourcePrinterVisitor, null)
     }
+
     private fun print(obj: Any?) = printer.print(obj)
     private fun println(obj: Any?) = printer.println(obj)
     private fun println() = printer.println()
@@ -360,6 +359,7 @@ class IrSourcePrinterVisitor(
                 "invoke", "get", "set" -> ""
                 "iterator", "hasNext", "next", "getValue", "setValue",
                 "noWhenBranchMatchedException" -> name
+
                 "CHECK_NOT_NULL" -> "!!"
                 else -> {
                     if (name.startsWith("component")) name
@@ -374,9 +374,11 @@ class IrSourcePrinterVisitor(
                     expression.dispatchReceiver?.type?.isInt() == true -> true
                     expression.extensionReceiver?.type?.isInt() == true -> true
                     expression.valueArgumentsCount > 0 &&
-                        expression.getValueArgument(0)?.type?.isInt() == true -> true
+                            expression.getValueArgument(0)?.type?.isInt() == true -> true
+
                     else -> false
                 }
+
                 else -> false
             }
             val prevPrintBinary = printIntsAsBinary
@@ -392,16 +394,19 @@ class IrSourcePrinterVisitor(
                     (expression.dispatchReceiver ?: expression.extensionReceiver)?.print()
                     print(opSymbol)
                 }
+
                 "CHECK_NOT_NULL" -> {
                     expression.getValueArgument(0)?.print()
                     print(opSymbol)
                 }
+
                 "getValue", "setValue" -> {
                     (expression.dispatchReceiver ?: expression.extensionReceiver)?.print()
                     print(".")
                     print(opSymbol)
                     expression.printArgumentList()
                 }
+
                 "invoke" -> {
                     (expression.dispatchReceiver ?: expression.extensionReceiver)?.print()
                     expression.printArgumentList()
@@ -431,6 +436,7 @@ class IrSourcePrinterVisitor(
                     print(" $opSymbol ")
                     expression.getValueArgument(1)?.print()
                 }
+
                 "iterator", "hasNext", "next",
                 "noWhenBranchMatchedException" -> {
                     (expression.dispatchReceiver ?: expression.extensionReceiver)?.print()
@@ -438,6 +444,7 @@ class IrSourcePrinterVisitor(
                     print(opSymbol)
                     print("()")
                 }
+
                 else -> {
                     if (name.startsWith("component")) {
                         (expression.dispatchReceiver ?: expression.extensionReceiver)?.print()
@@ -473,7 +480,7 @@ class IrSourcePrinterVisitor(
 
         val prop = (function as? IrSimpleFunction)?.correspondingPropertySymbol?.owner
 
-        if (prop != null && !function.hasAnnotation(KonifyClassIds.View.asSingleFqName())) {
+        if (prop != null && !function.hasAnnotation(KonifyIds.ViewClassId.asSingleFqName())) {
             val propName = prop.name.asString()
             print(propName)
             if (function == prop.setter) {
@@ -526,9 +533,9 @@ class IrSourcePrinterVisitor(
             if (arg != null) {
                 val param = symbol.owner.valueParameters[i]
                 val isLambda = arg is IrFunctionExpression ||
-                    (arg is IrBlock &&
-                        (arg.origin == IrStatementOrigin.LAMBDA ||
-                            arg.origin == IrStatementOrigin.ADAPTED_FUNCTION_REFERENCE))
+                        (arg is IrBlock &&
+                                (arg.origin == IrStatementOrigin.LAMBDA ||
+                                        arg.origin == IrStatementOrigin.ADAPTED_FUNCTION_REFERENCE))
                 if (isLambda) {
                     arg.unwrapLambda()?.let {
                         returnTargetToCall[it] = this
@@ -608,23 +615,29 @@ class IrSourcePrinterVisitor(
             IrTypeOperator.IMPLICIT_COERCION_TO_UNIT -> {
                 expression.argument.print()
             }
+
             IrTypeOperator.NOT_INSTANCEOF -> {
                 expression.argument.print()
             }
+
             IrTypeOperator.CAST, IrTypeOperator.SAFE_CAST, IrTypeOperator.IMPLICIT_CAST -> {
                 expression.argument.print()
             }
+
             IrTypeOperator.SAM_CONVERSION -> {
                 print(expression.type.renderSrc())
                 print(" ")
                 expression.argument.print()
             }
+
             IrTypeOperator.IMPLICIT_NOTNULL -> {
                 expression.argument.print()
             }
+
             IrTypeOperator.INSTANCEOF -> {
                 expression.argument.print()
             }
+
             else -> error("Unknown type operator: ${expression.operator}")
         }
     }
@@ -686,6 +699,7 @@ class IrSourcePrinterVisitor(
                     print("$")
                     arg.print()
                 }
+
                 else -> {
                     print("\${")
                     arg.print()
@@ -720,6 +734,7 @@ class IrSourcePrinterVisitor(
                 print(" || ")
                 rhs.print()
             }
+
             expression.origin == IrStatementOrigin.ANDAND -> {
                 val lhs = expression.branches[0].condition
                 val rhs = expression.branches[0].result
@@ -727,13 +742,14 @@ class IrSourcePrinterVisitor(
                 print(" && ")
                 rhs.print()
             }
+
             isIf -> {
                 val singleLine = expression.branches.all {
                     it.result is IrConst<*> || it.result is IrGetValue
                 }
                 expression.branches.forEachIndexed { index, branch ->
                     val isElse = index == expression.branches.size - 1 &&
-                        (branch.condition as? IrConst<*>)?.value == true
+                            (branch.condition as? IrConst<*>)?.value == true
                     when {
                         index == 0 -> {
                             print("if (")
@@ -743,12 +759,14 @@ class IrSourcePrinterVisitor(
                             else
                                 println(") {")
                         }
+
                         isElse -> {
                             if (singleLine)
                                 print(" else ")
                             else
                                 println("} else {")
                         }
+
                         else -> {
                             if (singleLine)
                                 print(" else if (")
@@ -771,6 +789,7 @@ class IrSourcePrinterVisitor(
                 if (!singleLine)
                     println("}")
             }
+
             else -> {
                 print("when ")
                 bracedBlock {
@@ -814,7 +833,7 @@ class IrSourcePrinterVisitor(
 
     private val IrFunction.isLambda: Boolean
         get() = name.asString() == SpecialNames.ANONYMOUS_STRING ||
-            origin == IrDeclarationOrigin.ADAPTER_FOR_CALLABLE_REFERENCE
+                origin == IrDeclarationOrigin.ADAPTER_FOR_CALLABLE_REFERENCE
 
     private val IrFunction.isDelegatedPropertySetter: Boolean
         get() = isSetter && origin == IrDeclarationOrigin.DELEGATED_PROPERTY_ACCESSOR
@@ -838,7 +857,8 @@ class IrSourcePrinterVisitor(
         val returnTarget = expression.returnTargetSymbol.owner
         if (returnTarget !is IrFunction ||
             (!returnTarget.isLambda && (useFir || !returnTarget.isDelegatedPropertySetter)) ||
-            !expression.isLastStatementIn(returnTarget)) {
+            !expression.isLastStatementIn(returnTarget)
+        ) {
             val suffix = returnTargetToCall[returnTarget.symbol]?.let {
                 "@${it.symbol.owner.name}"
             } ?: ""
@@ -858,20 +878,24 @@ class IrSourcePrinterVisitor(
                 lhs.print()
                 print("++")
             }
+
             IrStatementOrigin.POSTFIX_DECR -> {
                 val tmpVar = expression.statements[0] as IrVariable
                 val lhs = tmpVar.initializer ?: error("Expected initializer")
                 lhs.print()
                 print("--")
             }
+
             IrStatementOrigin.LAMBDA, IrStatementOrigin.ADAPTED_FUNCTION_REFERENCE -> {
                 val function = expression.statements[0] as IrFunction
                 function.printAsLambda()
             }
+
             IrStatementOrigin.OBJECT_LITERAL -> {
                 val classImpl = expression.statements[0] as IrClass
                 classImpl.printAsObject()
             }
+
             IrStatementOrigin.SAFE_CALL -> {
                 val lhs = expression.statements[0] as IrVariable
                 val rhsStatement = expression.statements[1]
@@ -883,6 +907,7 @@ class IrSourcePrinterVisitor(
                             else -> target
                         }
                     }
+
                     else -> {
                         rhsStatement
                     }
@@ -897,9 +922,11 @@ class IrSourcePrinterVisitor(
                 print(call.symbol.owner.name)
                 call.printArgumentList()
             }
+
             IrStatementOrigin.FOR_LOOP -> {
                 expression.statements.printJoin("\n")
             }
+
             else -> {
                 expression.statements.printJoin("\n")
             }
@@ -979,6 +1006,7 @@ class IrSourcePrinterVisitor(
         print(".")
         print(owner.name)
     }
+
     override fun visitSetField(expression: IrSetField) {
         expression.receiver?.print()
         print(".")
@@ -1092,6 +1120,7 @@ class IrSourcePrinterVisitor(
                     "${expression.value}"
                 }
             }
+
             is IrConstKind.Long -> "${expression.value}L"
             is IrConstKind.Float -> "${expression.value}f"
             is IrConstKind.Double -> "${expression.value}"
@@ -1228,7 +1257,7 @@ class IrSourcePrinterVisitor(
     override fun visitTypeParameter(declaration: IrTypeParameter) {
         print(declaration.name)
         val isNonEmpty = declaration.superTypes.isNotEmpty() &&
-            !declaration.superTypes[0].isNullableAny()
+                !declaration.superTypes[0].isNullableAny()
         if (isNonEmpty) {
             print(": ")
             print(declaration.superTypes.joinToString(", ") { it.renderSrc() })
@@ -1552,11 +1581,13 @@ class IrSourcePrinterVisitor(
                 append(irElement.value.toString())
                 append('\'')
             }
+
             is IrVararg -> {
                 appendListWith(irElement.elements, "[", "]", ", ") {
                     renderAsAnnotationArgument(it)
                 }
             }
+
             else -> append(irElement.accept(this@IrSourcePrinterVisitor, null))
         }
     }
@@ -1605,7 +1636,6 @@ inline fun <T> includeFileNameInExceptionTrace(file: IrFile, body: () -> T): T {
         throw Exception("IR lowering failed at: ${file.name}", e)
     }
 }
-
 
 private val IrStatementOrigin?.isLambdaBlockOrigin: Boolean
     get() = isLambda || this == IrStatementOrigin.ADAPTED_FUNCTION_REFERENCE ||

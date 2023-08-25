@@ -10,10 +10,14 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 @OptIn(ExperimentalCompilerApi::class)
 @AutoService(CommandLineProcessor::class)
 class KonifyCommandLineProcessor : CommandLineProcessor {
-    override val pluginId: String = "ui"
-    override val pluginOptions: Collection<AbstractCliOption> = listOf(
-        CliOption("enable", "<true|false>", "whether the plugin is enabled"),
+    override val pluginId: String = "konify"
 
+    override val pluginOptions: Collection<AbstractCliOption> = listOf(
+        CliOption(
+            optionName = "enable",
+            valueDescription = "<true|false>",
+            description = "whether the plugin is enabled"
+        )
     )
 
     override fun processOption(
@@ -21,9 +25,9 @@ class KonifyCommandLineProcessor : CommandLineProcessor {
         value: String,
         configuration: CompilerConfiguration
     ) {
-        when(option.optionName){
-            "enable"->configuration.put(KEY_ENABLED,value.toBoolean())
-            else-> error("Unexpected config option ${option.optionName}")
+        when (option.optionName) {
+            "enable" -> configuration.put(KEY_ENABLED, value.toBoolean())
+            else -> error("Unexpected config option ${option.optionName}")
         }
     }
 }

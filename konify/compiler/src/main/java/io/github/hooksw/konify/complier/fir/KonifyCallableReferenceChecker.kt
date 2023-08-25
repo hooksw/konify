@@ -16,9 +16,6 @@
 
 package io.github.hooksw.konify.complier.fir
 
-import io.github.hooksw.konify.complier.fir.KKonifyFunction
-import io.github.hooksw.konify.complier.fir.KonifyErrors
-import io.github.hooksw.konify.complier.fir.KonifyFunction
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -27,29 +24,18 @@ import org.jetbrains.kotlin.fir.expressions.FirCallableReferenceAccess
 import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.types.functionTypeKind
 
-/**
- * Report an error on composable function references.
- *
- * `FirFunctionTypeKindExtension` has very limited support for custom function references and
- * basically requires implementations to distinguish between reflective and non-reflective
- * function types. Since there are no reflective composable function types we cannot support
- * composable function references yet.
- */
 object KonifyCallableReferenceChecker : FirCallableReferenceAccessChecker() {
     override fun check(
         expression: FirCallableReferenceAccess,
         context: CheckerContext,
         reporter: DiagnosticReporter
     ) {
-        // The type of a function reference depends on the context where it is used.
-        // We could allow non-reflective composable function references, but this would be fragile
-        // and depend on details of the frontend resolution.
         val kind = expression.typeRef.coneType.functionTypeKind(context.session)
         if (kind == KonifyFunction || kind == KKonifyFunction) {
             reporter.reportOn(
-                expression.source,
-                KonifyErrors.COMPOSABLE_FUNCTION_REFERENCE,
-                context
+                source = expression.source,
+                factory = ComposableErrors.COMPOSABLE_FUNCTION_REFERENCE,
+                context = context
             )
         }
     }
