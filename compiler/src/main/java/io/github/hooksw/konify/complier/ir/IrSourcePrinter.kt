@@ -1450,50 +1450,61 @@ class IrSourcePrinterVisitor(
             else -> "{${javaClass.simpleName} $this}"
         }
 
-    private inline fun buildTrimEnd(fn: StringBuilder.() -> Unit): String =
-        buildString(fn).trimEnd()
+    private inline fun buildTrimEnd(fn: StringBuilder.() -> Unit): String {
+        return buildString(fn).trimEnd()
+    }
 
-    private fun IrTypeAbbreviation.renderTypeAbbreviation(): String =
-        buildString {
+    private fun IrTypeAbbreviation.renderTypeAbbreviation(): String {
+        return buildString {
             append("{ ")
             append(renderTypeAnnotations(annotations))
             append(typeAlias.renderTypeAliasFqn())
             if (arguments.isNotEmpty()) {
-                append(
-                    arguments.joinToString(prefix = "<", postfix = ">", separator = ", ") {
-                        it.renderTypeArgument()
-                    }
-                )
+                val segment = arguments.joinToString(
+                    prefix = "<",
+                    postfix = ">",
+                    separator = ", "
+                ) { arg ->
+                    arg.renderTypeArgument()
+                }
+                append(segment)
             }
             if (hasQuestionMark) {
                 append('?')
             }
             append(" }")
         }
+    }
 
     private fun IrTypeArgument.renderTypeArgument(): String =
         when (this) {
             is IrStarProjection -> "*"
-
             is IrTypeProjection -> buildTrimEnd {
                 append(variance.label)
-                if (variance != Variance.INVARIANT) append(' ')
+                if (variance != Variance.INVARIANT) {
+                    append(' ')
+                }
                 append(type.renderSrc())
             }
-
             else -> "IrTypeArgument[$this]"
         }
 
-    private fun renderTypeAnnotations(annotations: List<IrConstructorCall>) =
-        if (annotations.isEmpty())
-            ""
-        else
-            annotations.joinToString(prefix = "", postfix = " ", separator = " ") {
-                "@[${renderAsAnnotation(it)}]"
-            }
+    private fun renderTypeAnnotations(annotations: List<IrConstructorCall>): String {
+        if (annotations.isEmpty()) {
+            return ""
+        }
+        return annotations.joinToString(
+            prefix = "",
+            postfix = " ",
+            separator = " "
+        ) { call ->
+            "@[${renderAsAnnotation(call)}]"
+        }
+    }
 
-    private fun renderAsAnnotation(irAnnotation: IrConstructorCall): String =
-        StringBuilder().also { it.renderAsAnnotation(irAnnotation) }.toString()
+    private fun renderAsAnnotation(irAnnotation: IrConstructorCall): String {
+        return StringBuilder().also { it.renderAsAnnotation(irAnnotation) }.toString()
+    }
 
     private fun StringBuilder.renderAsAnnotation(irAnnotation: IrConstructorCall) {
         val annotationClassName = try {
@@ -1502,9 +1513,9 @@ class IrSourcePrinterVisitor(
             "<unbound>"
         }
         append(annotationClassName)
-
-        if (irAnnotation.valueArgumentsCount == 0) return
-
+        if (irAnnotation.valueArgumentsCount == 0) {
+            return
+        }
         val valueParameterNames = irAnnotation.getValueParameterNamesForDebug()
         var first = true
         append("(")
@@ -1522,11 +1533,14 @@ class IrSourcePrinterVisitor(
     }
 
     @OptIn(ObsoleteDescriptorBasedAPI::class)
-    private fun IrTypeAliasSymbol.renderTypeAliasFqn(): String =
-        if (isBound)
-            StringBuilder().also { owner.renderDeclarationFqn(it) }.toString()
-        else
-            "<unbound $this: ${this.descriptor}>"
+    private fun IrTypeAliasSymbol.renderTypeAliasFqn(): String {
+        if (!isBound) {
+            return "<unbound $this: ${this.descriptor}>"
+        }
+        val builder = StringBuilder()
+        owner.renderDeclarationFqn(builder)
+        return builder.toString()
+    }
 
     private fun IrDeclaration.renderDeclarationFqn(sb: StringBuilder) {
         renderDeclarationParentFqn(sb)
@@ -1553,24 +1567,25 @@ class IrSourcePrinterVisitor(
 
     private fun IrMemberAccessExpression<*>.getValueParameterNamesForDebug(): List<String> {
         val expectedCount = valueArgumentsCount
-        return if (symbol.isBound) {
-            val owner = symbol.owner
-            if (owner is IrFunction) {
-                (0 until expectedCount).map {
-                    if (it < owner.valueParameters.size)
-                        owner.valueParameters[it].normalizedName
-                    else
-                        "${it + 1}"
-                }
+        if (symbol.isBound.not()) {
+            return getPlaceholderParameterNames(expectedCount)
+        }
+        val owner = symbol.owner
+        if (owner !is IrFunction) {
+            return getPlaceholderParameterNames(expectedCount)
+        }
+        return List(expectedCount) { index ->
+            if (index < owner.valueParameters.size) {
+                owner.valueParameters[index].normalizedName
             } else {
-                getPlaceholderParameterNames(expectedCount)
+                "${index + 1}"
             }
-        } else
-            getPlaceholderParameterNames(expectedCount)
+        }
     }
 
-    private fun getPlaceholderParameterNames(expectedCount: Int) =
-        (1..expectedCount).map { "$it" }
+    private fun getPlaceholderParameterNames(expectedCount: Int): List<String> {
+        return List(expectedCount) { "${it + 1}" }
+    }
 
     private fun StringBuilder.renderAsAnnotationArgument(irElement: IrElement?) {
         when (irElement) {
@@ -1581,24 +1596,18 @@ class IrSourcePrinterVisitor(
                 append(irElement.value.toString())
                 append('\'')
             }
-
             is IrVararg -> {
-                appendListWith(irElement.elements, "[", "]", ", ") {
-                    renderAsAnnotationArgument(it)
+                appendListWith(irElement.elements, "[", "]", ", ") { element ->
+                    renderAsAnnotationArgument(element)
                 }
             }
-
             else -> append(irElement.accept(this@IrSourcePrinterVisitor, null))
         }
     }
 
-    // Names for temporary variables and synthesized parameters are not consistent between
-    // K1 and K2. This function returns the same name for both frontends.
     private val IrValueDeclaration.normalizedName: String
         get() = when {
-            // FIR generates both <iterator> and tmp0_for_iterator...
             origin == IrDeclarationOrigin.FOR_LOOP_ITERATOR -> "<iterator>"
-            // $anonymous$parameter$x vs $unused$var$x
             origin == IrDeclarationOrigin.UNDERSCORE_PARAMETER -> "<unused var>"
             !useFir && name.asString().endsWith("_elvis_lhs") -> "<elvis>"
             !useFir && name.asString() == "\$this\$null" -> "<this>"
@@ -1620,7 +1629,9 @@ private inline fun <T> StringBuilder.appendListWith(
     append(prefix)
     var isFirst = true
     for (item in list) {
-        if (!isFirst) append(separator)
+        if (!isFirst) {
+            append(separator)
+        }
         renderItem(item)
         isFirst = false
     }
@@ -1638,5 +1649,6 @@ inline fun <T> includeFileNameInExceptionTrace(file: IrFile, body: () -> T): T {
 }
 
 private val IrStatementOrigin?.isLambdaBlockOrigin: Boolean
-    get() = isLambda || this == IrStatementOrigin.ADAPTED_FUNCTION_REFERENCE ||
+    get() = isLambda ||
+            this == IrStatementOrigin.ADAPTED_FUNCTION_REFERENCE ||
             this == IrStatementOrigin.SUSPEND_CONVERSION

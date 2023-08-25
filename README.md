@@ -63,7 +63,7 @@ fun A(params: State<Int>) {
 
 //will be transformed to
 fun A(params: State<Int>, $node: ViewNode) {
-    val $cnode =$node.createChild()
+    val $cnode = $node.createChild()
     B($cnode)
     $node.prepare()
 }

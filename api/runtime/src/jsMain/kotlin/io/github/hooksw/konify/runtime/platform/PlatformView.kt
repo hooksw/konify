@@ -1,6 +1,5 @@
 package io.github.hooksw.konify.runtime.platform
 
-import io.github.hooksw.konify.runtime.platform.PlatformView
 import org.w3c.dom.HTMLElement
 
 actual class PlatformView(private val element: HTMLElement) {

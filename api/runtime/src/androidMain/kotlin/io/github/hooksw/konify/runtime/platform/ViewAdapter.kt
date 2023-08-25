@@ -16,7 +16,7 @@ fun Activity.setContent(children: @View () -> Unit) {
         )
         tag = root
     }
-    val platformView = io.github.hooksw.konify.runtime.platform.PlatformView(frameLayout)
+    val platformView = PlatformView(frameLayout)
     root.registerPlatformView(platformView)
     injected(root, children)
     setContentView(frameLayout)

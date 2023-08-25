@@ -31,7 +31,6 @@ import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.packageFqName
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
-import org.jetbrains.kotlin.name.FqName
 
 class KonifyLambdaAnnotator(context: IrPluginContext) : IrElementVisitorVoid {
     private val konifySymbol = context.referenceClass(KonifyIds.ViewClassId)!!
