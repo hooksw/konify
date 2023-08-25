@@ -14,7 +14,7 @@ subprojects {
 
 allprojects {
     kotlin {
-        android {
+        androidTarget {
             compilations.all {
                 kotlinOptions {
                     jvmTarget = "1.8"
@@ -73,7 +73,7 @@ allprojects {
 
     android {
         namespace = "com.example.ui.api"
-        compileSdk = 33
+        compileSdk = 32
 
         defaultConfig {
             minSdk = 26
@@ -84,5 +84,5 @@ allprojects {
 dependencies {
     api(project(":api:runtime"))
     api(project(":api:foundation"))
- api(project(":api:ui"))
+    api(project(":api:ui"))
 }
