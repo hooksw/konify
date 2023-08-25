@@ -29,3 +29,33 @@ internal class ObservedState<T>(
         observers.remove(observer)
     }
 }
+
+internal class ObservedIntState(
+    initialValue: Int,
+    private val equality: Equality<Int>
+) : MutableIntState {
+    private val observers: MutableList<Observer<Int>> = ArrayList(2)
+
+    override var intValue: Int = initialValue
+        set(value) {
+            if (equality.compare(field, value)) {
+                return
+            }
+            field = value
+            onUpdate(value)
+        }
+
+    private fun onUpdate(new: Int) {
+        for (observer in observers) {
+            observer.accept(new)
+        }
+    }
+
+    override fun bind(observer: Observer<Int>) {
+        observers.add(observer)
+    }
+
+    override fun unbind(observer: Observer<Int>) {
+        observers.remove(observer)
+    }
+}
