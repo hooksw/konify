@@ -6,7 +6,6 @@ plugins {
 //    id("com.vanniktech.maven.publish")
 }
 
-
 dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable")
 

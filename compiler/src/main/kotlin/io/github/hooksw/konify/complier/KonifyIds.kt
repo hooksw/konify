@@ -12,11 +12,11 @@ object KonifyIds {
 
     val ViewFqName: FqName = FqName(ViewString)
 
-    val ViewClassId = ClassId.fromString(ViewString)
+    val ViewClassId: ClassId = ClassId.fromString(ViewString)
 
     const val ReadOnlyViewString: String = "$AnnotationPackageString.ReadOnlyView"
 
     val ReadOnlyViewFqName: FqName = FqName(ReadOnlyViewString)
 
-    val ReadOnlyViewClassId = ClassId.fromString(ReadOnlyViewString)
+    val ReadOnlyViewClassId: ClassId = ClassId.fromString(ReadOnlyViewString)
 }
