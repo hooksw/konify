@@ -1,19 +1,18 @@
 package io.github.hooksw.konify.runtime
 
-import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
+import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.state.State
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-@ReadOnlyView
-fun SideEffect(
+
+fun ViewNode.SideEffect(
     vararg keys: State<*>,
     effect: () -> Unit
 ) {
-    val node = currentViewNode
-    node.onPrepared(effect)
+    onPrepared(effect)
     for (key in keys) {
         key.bind {
             effect()
@@ -21,17 +20,16 @@ fun SideEffect(
     }
 }
 
-@ReadOnlyView
-fun DisposableEffect(
+
+fun ViewNode.DisposableEffect(
     vararg keys: State<*>,
     effect: () -> DisposeHandle
 ) {
-    val node = currentViewNode
     var handle: DisposeHandle? = null
-    node.onPrepared {
+    onPrepared {
         handle = effect()
     }
-    node.onDispose {
+    onDispose {
         handle?.onDispose()
     }
     for (key in keys) {
@@ -41,18 +39,17 @@ fun DisposableEffect(
     }
 }
 
-@ReadOnlyView
-fun LaunchedEffect(
+
+fun ViewNode.LaunchedEffect(
     vararg keys: State<*>,
     effect: suspend CoroutineScope.() -> Unit
 ) {
-    val node = currentViewNode
     val scope = CoroutineScope(Dispatchers.Main.immediate)
     var job: Job? = null
-    node.onPrepared {
+    onPrepared {
         job = scope.launch(block = effect)
     }
-    node.onDispose {
+    onDispose {
         job?.cancel()
     }
     for (key in keys) {

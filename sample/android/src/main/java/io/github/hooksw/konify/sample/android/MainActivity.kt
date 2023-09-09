@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+
             val booleanState = mutableStateOf(false)
 
             Switch {

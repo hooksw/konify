@@ -2,16 +2,15 @@ package io.github.hooksw.konify.runtime.state
 
 import kotlin.reflect.KProperty
 
-interface State<out T> {
+interface State<T> {
     val value: T
 
-    fun bind(observer: Observer<T>)
+    fun bind(observer: (T)->Unit)
 }
 
 interface MutableState<T> : State<T> {
     override var value: T
 }
-
 fun <T> mutableStateOf(
     initialValue: T,
     equality: Equality<T> = structuralEquality()

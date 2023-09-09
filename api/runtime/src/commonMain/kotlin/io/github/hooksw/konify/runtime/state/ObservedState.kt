@@ -4,7 +4,7 @@ internal class ObservedState<T>(
     initialValue: T,
     private val equality: Equality<T>
 ) : MutableState<T> {
-    private val observers: MutableList<Observer<T>> = ArrayList(2)
+    private val observers: MutableList<(T)->Unit> = ArrayList(2)
 
     override var value: T = initialValue
         set(value) {
@@ -17,11 +17,11 @@ internal class ObservedState<T>(
 
     private fun onUpdate(new: T) {
         for (observer in observers) {
-            observer.accept(new)
+            observer(new)
         }
     }
 
-    override fun bind(observer: Observer<T>) {
+    override fun bind(observer: (T)->Unit) {
         observers.add(observer)
     }
 }

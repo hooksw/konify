@@ -2,26 +2,21 @@ package io.github.hooksw.konify.common.component.text
 
 import android.content.Context
 import android.widget.TextView
-import io.github.hooksw.konify.runtime.annotation.View
-import io.github.hooksw.konify.runtime.currentViewNode
+import io.github.hooksw.konify.runtime.node.ViewNode
+import io.github.hooksw.konify.runtime.node.component
+import io.github.hooksw.konify.runtime.node.getCurrent
 import io.github.hooksw.konify.runtime.platform.LocalContext
 import io.github.hooksw.konify.runtime.platform.PlatformView
 
-@View
-actual fun Text(
+actual fun ViewNode.Text(
     text: String
-) {
-    // Create child node.
-    val node = currentViewNode.createChild()
-    // Run custom block.
-    val context = LocalContext.current.value
+)=component {
+    val context = getCurrent(LocalContext).value
     val textView = createTextView(
         context,
         text = text
     )
-    node.registerPlatformView(textView)
-    // Prepare.
-    node.prepare()
+    registerPlatformView(textView)
 }
 
 // -------- Internal --------

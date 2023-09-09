@@ -13,11 +13,14 @@ subprojects {
 }
 
 allprojects {
+
     kotlin {
         android {
             compilations.all {
                 kotlinOptions {
                     jvmTarget = "1.8"
+                    freeCompilerArgs += "-Xjvm-default=all"
+
                 }
             }
         }
@@ -34,12 +37,12 @@ allprojects {
 
         js(IR) {
             browser {
-                commonWebpackConfig {
+                commonWebpackConfig(Action {
                     cssSupport {
                         enabled.set(true)
                         mode.set("inline")
                     }
-                }
+                })
             }
         }
 
@@ -84,5 +87,5 @@ allprojects {
 dependencies {
     api(project(":api:runtime"))
     api(project(":api:foundation"))
- api(project(":api:ui"))
+    api(project(":api:ui"))
 }

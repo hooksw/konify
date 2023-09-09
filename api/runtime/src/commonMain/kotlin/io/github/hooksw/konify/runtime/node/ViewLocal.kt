@@ -1,23 +1,18 @@
 package io.github.hooksw.konify.runtime.node
 
-import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
-import io.github.hooksw.konify.runtime.annotation.View
-import io.github.hooksw.konify.runtime.currentViewNode
 import io.github.hooksw.konify.runtime.state.State
 import io.github.hooksw.konify.runtime.state.mutableStateOf
+import io.github.hooksw.konify.runtime.state.staticStateOf
 
 // -------- ViewLocal --------
 
 interface ViewLocal<T> {
-    val default: State<T>
 
-    val current: State<T>
-        @ReadOnlyView
-        get() = currentViewNode.getViewLocal(this) ?: default
+    val ViewNode.current: State<T>
 }
 
-inline fun <T> viewLocalOf(defaultProvider: () -> T): ViewLocal<T> {
-    return DefaultViewLocal(defaultProvider())
+fun <T> viewLocalOf(defaultProvider: () -> T): ViewLocal<T> {
+    return DefaultViewLocal(defaultProvider)
 }
 
 // -------- ProvidedViewLocal --------
@@ -36,14 +31,13 @@ infix fun <T> ViewLocal<T>.provides(state: State<T>): ProvidedViewLocal<T> {
     )
 }
 
-@ReadOnlyView
-fun ViewLocalProvider(
+
+fun ViewNode.ViewLocalProvider(
     vararg locals: ProvidedViewLocal<*>,
-    block: @View () -> Unit
+    block: ViewNode.() -> Unit
 ) {
-    val node = currentViewNode
     for (local in locals) {
-        node.provideViewLocal(local)
+        provideViewLocal(local)
     }
     block()
 }
@@ -56,6 +50,10 @@ class ProvidedViewLocal<T>(
 // -------- Internal --------
 
 @PublishedApi
-internal class DefaultViewLocal<T>(defaultProvider: T) : ViewLocal<T> {
-    override val default: State<T> = mutableStateOf(defaultProvider)
+internal class DefaultViewLocal<T>(private val defaultProvider: () -> T) : ViewLocal<T> {
+
+    internal val default: State<T> by lazy { staticStateOf(defaultProvider()) }
+
+    override val ViewNode.current: State<T>
+        get() = getViewLocal(this@DefaultViewLocal) ?: default
 }
