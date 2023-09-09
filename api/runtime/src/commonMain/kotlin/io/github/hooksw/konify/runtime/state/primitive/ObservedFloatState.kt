@@ -24,4 +24,7 @@ internal class ObservedFloatState(
     override fun bind(observer: (Float)->Unit) {
         observers.add(observer)
     }
+    override fun unbind(observer: (Float) -> Unit) {
+        observers.remove (observer)
+    }
 }

@@ -15,7 +15,7 @@ fun ViewNode.SideEffect(
 ) {
     onPrepared(effect)
     for (key in keys) {
-        key.bindWithLifecycle {
+        key.bindWithLifecycle(this) {
             effect()
         }
     }
@@ -34,7 +34,7 @@ fun ViewNode.DisposableEffect(
         handle?.onDispose()
     }
     for (key in keys) {
-        key.bindWithLifecycle {
+        key.bindWithLifecycle(this) {
             handle = effect()
         }
     }
@@ -54,7 +54,7 @@ fun ViewNode.LaunchedEffect(
         job?.cancel()
     }
     for (key in keys) {
-        key.bindWithLifecycle {
+        key.bindWithLifecycle(this) {
             job?.cancel()
             job = scope.launch(block = effect)
         }

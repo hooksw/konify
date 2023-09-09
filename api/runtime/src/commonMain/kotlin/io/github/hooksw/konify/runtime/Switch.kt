@@ -1,22 +1,19 @@
 package io.github.hooksw.konify.runtime
 
-import io.github.hooksw.konify.runtime.annotation.View
 import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.state.State
 
 sealed interface SwitchScope {
     fun If(
         condition: State<Boolean>,
-        block: @View () -> Unit
+        block: ViewNode. () -> Unit
     )
 
-    fun Else(block: @View () -> Unit)
+    fun Else(block: ViewNode. () -> Unit)
 }
 
-@View
-inline fun Switch(crossinline function: SwitchScope.() -> Unit) {
-    val node = currentViewNode
-    val scope = SwitchScopeImpl(node)
+inline fun ViewNode.Switch(crossinline function: SwitchScope.() -> Unit) {
+    val scope = SwitchScopeImpl(this)
     scope.function()
     scope.prepare()
 }
@@ -31,9 +28,9 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
 
     private val ifConditions: MutableList<State<Boolean>> = ArrayList(2)
 
-    private val ifBlocks: MutableList<@View () -> Unit> = ArrayList(2)
+    private val ifBlocks: MutableList<ViewNode. () -> Unit> = ArrayList(2)
 
-    private var elseBlock: (@View () -> Unit)? = null
+    private var elseBlock: (ViewNode.() -> Unit)? = null
 
     private var lastCondition: State<Boolean>? = null
 
@@ -56,7 +53,7 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
                 node.removeAllChildren()
                 this.lastCondition = condition
                 val currentConditionIndex = ifConditions.indexOf(condition)
-                injected(node, ifBlocks[currentConditionIndex])
+                node.(ifBlocks[currentConditionIndex])()
             }
             return
         }
@@ -66,7 +63,7 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
                 node.removeAllChildren()
                 this.lastCondition = null
             }
-            injected(node, elseBlock)
+            node.elseBlock()
         }
     }
 
@@ -76,7 +73,7 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
         }
     }
 
-    override fun If(condition: State<Boolean>, block: @View () -> Unit) {
+    override fun If(condition: State<Boolean>, block: ViewNode.() -> Unit) {
         if (prepared) {
             error("Cannot add more blocks after prepared.")
         }
@@ -84,7 +81,7 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
         ifBlocks.add(block)
     }
 
-    override fun Else(block: @View () -> Unit) {
+    override fun Else(block: ViewNode. () -> Unit) {
         if (prepared) {
             error("Cannot add more blocks after prepared.")
         }

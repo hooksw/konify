@@ -1,15 +1,14 @@
 package io.github.hooksw.konify.runtime.state
 
-import io.github.hooksw.konify.runtime.annotation.ReadOnlyView
-import io.github.hooksw.konify.runtime.currentViewNode
+import io.github.hooksw.konify.runtime.node.ViewNode
 import kotlin.reflect.KProperty
 
 interface State<out T> {
     val value: T
 
-    fun bind(observer: Observer<T>)
+    fun bind(observer: (T)->Unit)
 
-    fun unbind(observer: Observer<T>)
+    fun unbind(observer: (T)->Unit)
 }
 
 interface MutableState<T> : State<T> {
@@ -34,10 +33,9 @@ operator fun <T> MutableState<T>.setValue(thisRef: Any?, property: KProperty<*>,
     this.value = value
 }
 
-@ReadOnlyView
-fun <T> State<T>.bindWithLifecycle(observer: Observer<T>) {
+fun <T> State<T>.bindWithLifecycle(node: ViewNode,observer: (T)->Unit) {
     bind(observer)
-    currentViewNode.onDispose {
+    node.onDispose {
         unbind(observer)
     }
 }

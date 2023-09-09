@@ -24,4 +24,8 @@ internal class ObservedDoubleState(
     override fun bind(observer: (Double)->Unit) {
         observers.add(observer)
     }
+
+    override fun unbind(observer: (Double) -> Unit) {
+        observers.remove (observer)
+    }
 }

@@ -24,4 +24,7 @@ internal class ObservedIntState(
     override fun bind(observer: (Int)->Unit) {
         observers.add(observer)
     }
+    override fun unbind(observer: (Int) -> Unit) {
+        observers.remove (observer)
+    }
 }

@@ -24,4 +24,8 @@ internal class ObservedLongState(
     override fun bind(observer: (Long)->Unit) {
         observers.add(observer)
     }
+
+    override fun unbind(observer: (Long) -> Unit) {
+        observers.remove (observer)
+    }
 }
