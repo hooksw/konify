@@ -2,6 +2,7 @@ package io.github.hooksw.konify.runtime
 
 import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.state.State
+import io.github.hooksw.konify.runtime.state.bindWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,7 +15,7 @@ fun ViewNode.SideEffect(
 ) {
     onPrepared(effect)
     for (key in keys) {
-        key.bind {
+        key.bindWithLifecycle {
             effect()
         }
     }
@@ -33,7 +34,7 @@ fun ViewNode.DisposableEffect(
         handle?.onDispose()
     }
     for (key in keys) {
-        key.bind {
+        key.bindWithLifecycle {
             handle = effect()
         }
     }
@@ -53,7 +54,7 @@ fun ViewNode.LaunchedEffect(
         job?.cancel()
     }
     for (key in keys) {
-        key.bind {
+        key.bindWithLifecycle {
             job?.cancel()
             job = scope.launch(block = effect)
         }

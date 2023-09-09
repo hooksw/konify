@@ -1,19 +1,22 @@
 package io.github.hooksw.konify.runtime
 
+import io.github.hooksw.konify.runtime.annotation.View
 import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.state.State
 
 sealed interface SwitchScope {
     fun If(
         condition: State<Boolean>,
-        block: ViewNode. () -> Unit
+        block: @View () -> Unit
     )
 
-    fun Else(block: ViewNode. () -> Unit)
+    fun Else(block: @View () -> Unit)
 }
 
-inline fun ViewNode.Switch(crossinline function: SwitchScope.() -> Unit) {
-    val scope = SwitchScopeImpl(this)
+@View
+inline fun Switch(crossinline function: SwitchScope.() -> Unit) {
+    val node = currentViewNode
+    val scope = SwitchScopeImpl(node)
     scope.function()
     scope.prepare()
 }
@@ -22,23 +25,24 @@ inline fun ViewNode.Switch(crossinline function: SwitchScope.() -> Unit) {
 
 @PublishedApi
 internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
+    private val notifyObserver: (Any?) -> Unit = { notifyChange() }
+
     private var prepared: Boolean = false
 
     private val ifConditions: MutableList<State<Boolean>> = ArrayList(2)
 
-    private val ifBlocks: MutableList<ViewNode. () -> Unit> = ArrayList(2)
+    private val ifBlocks: MutableList<@View () -> Unit> = ArrayList(2)
 
-    private var elseBlock: (ViewNode. () -> Unit)? = null
+    private var elseBlock: (@View () -> Unit)? = null
 
     private var lastCondition: State<Boolean>? = null
 
     fun prepare() {
         for (condition in ifConditions) {
-            condition.bind { notifyChange() }
+            condition.bind(notifyObserver)
         }
-        node.onPrepared {
-            notifyChange()
-        }
+        node.onPrepared(this::notifyChange)
+        node.onDispose(this::dispose)
         prepared = true
     }
 
@@ -52,7 +56,7 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
                 node.removeAllChildren()
                 this.lastCondition = condition
                 val currentConditionIndex = ifConditions.indexOf(condition)
-                node.(ifBlocks[currentConditionIndex])()
+                injected(node, ifBlocks[currentConditionIndex])
             }
             return
         }
@@ -62,11 +66,17 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
                 node.removeAllChildren()
                 this.lastCondition = null
             }
-            node.elseBlock()
+            injected(node, elseBlock)
         }
     }
 
-    override fun If(condition: State<Boolean>, block: ViewNode. () -> Unit) {
+    private fun dispose() {
+        for (condition in ifConditions) {
+            condition.unbind(notifyObserver)
+        }
+    }
+
+    override fun If(condition: State<Boolean>, block: @View () -> Unit) {
         if (prepared) {
             error("Cannot add more blocks after prepared.")
         }
@@ -74,7 +84,7 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
         ifBlocks.add(block)
     }
 
-    override fun Else(block: ViewNode. () -> Unit) {
+    override fun Else(block: @View () -> Unit) {
         if (prepared) {
             error("Cannot add more blocks after prepared.")
         }

@@ -2,7 +2,6 @@ package io.github.hooksw.konify.runtime.platform
 
 import android.view.View
 import android.view.ViewGroup
-import io.github.hooksw.konify.runtime.platform.PlatformView
 
 actual class PlatformView(private val view: View) {
     actual fun addChild(platformView: PlatformView) {

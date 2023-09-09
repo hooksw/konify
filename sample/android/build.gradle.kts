@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "io.github.hooksw.konify.sample.android"
-    compileSdk = 33
+    compileSdk = 32
 
     defaultConfig {
         applicationId = "io.github.hooksw.konify.sample.android"
