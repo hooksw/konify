@@ -9,6 +9,8 @@ sealed interface ViewNode {
     fun createChild(): ViewNode
 
     fun removeAllChildren()
+    fun pauseAllChildren()
+    fun resumeAllChildren()
 
     // -------- Platform --------
 

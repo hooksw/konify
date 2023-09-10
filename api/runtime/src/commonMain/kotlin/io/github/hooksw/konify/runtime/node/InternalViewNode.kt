@@ -1,8 +1,6 @@
 package io.github.hooksw.konify.runtime.node
 
-import io.github.hooksw.konify.runtime.node.InternalViewNode.LifecycleState.Disposed
-import io.github.hooksw.konify.runtime.node.InternalViewNode.LifecycleState.Initial
-import io.github.hooksw.konify.runtime.node.InternalViewNode.LifecycleState.Prepared
+import io.github.hooksw.konify.runtime.node.InternalViewNode.LifecycleState.*
 import io.github.hooksw.konify.runtime.platform.PlatformView
 import io.github.hooksw.konify.runtime.state.State
 
@@ -23,6 +21,16 @@ internal class InternalViewNode : ViewNode {
     override fun removeAllChildren() {
         children.forEach { it.dispose() }
         children.clear()
+    }
+
+    override fun pauseAllChildren() {
+        children.forEach {
+            if (it.state != Paused) it.dispose()
+        }
+    }
+
+    override fun resumeAllChildren() {
+        children.forEach { it.prepare() }
     }
 
     // -------- Platform --------
@@ -47,6 +55,7 @@ internal class InternalViewNode : ViewNode {
     private enum class LifecycleState {
         Initial,
         Prepared,
+        Paused,
         Disposed
     }
 
@@ -55,11 +64,14 @@ internal class InternalViewNode : ViewNode {
     private val callbacksOnDisposed: MutableList<() -> Unit> = ArrayList(2)
 
     override fun prepare() {
-        if (state >= Prepared) {
+        if (state == Prepared) {
             error("This ViewNode is already prepared.")
         }
+        if (state == Disposed) {
+            error("This ViewNode has been disposed.")
+        }
         callbacksOnPrepared.forEach { it.invoke() }
-        callbacksOnPrepared.clear()
+//        callbacksOnPrepared.clear()
         state = Prepared
     }
 
@@ -77,17 +89,36 @@ internal class InternalViewNode : ViewNode {
         parent = null
         callbacksOnDisposed.forEach { it.invoke() }
         callbacksOnDisposed.clear()
+        callbacksOnPrepared.clear()
         state = Disposed
     }
 
     override fun onPrepared(block: () -> Unit) {
-        if (state >= Prepared) {
+        if (state != Initial) {
             error("Cannot schedule callback after prepared.")
         }
         if (block in callbacksOnPrepared) {
             return
         }
         callbacksOnPrepared.add(block)
+    }
+
+    fun pause() {
+        if (state != Prepared) {
+            error("This ViewNode should be prepared.")
+        }
+        pauseAllChildren()
+        callbacksOnDisposed.forEach { it.invoke() }
+        state = Paused
+    }
+
+    fun resume() {
+        if (state != Paused) {
+            error("This ViewNode should be paused.")
+        }
+        resumeAllChildren()
+        callbacksOnPrepared.forEach { it.invoke() }
+        state = Prepared
     }
 
     override fun onDispose(block: () -> Unit) {
