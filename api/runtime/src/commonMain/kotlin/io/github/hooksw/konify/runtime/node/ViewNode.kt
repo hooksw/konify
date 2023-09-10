@@ -8,7 +8,7 @@ sealed interface ViewNode {
 
     fun createChild(): ViewNode
 
-    fun removeAllChildren()
+    fun removeAllChildren(detachPlatformView: Boolean)
     fun pauseAllChildren()
     fun resumeAllChildren()
 

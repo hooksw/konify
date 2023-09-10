@@ -18,14 +18,14 @@ internal class InternalViewNode : ViewNode {
         return child
     }
 
-    override fun removeAllChildren() {
-        children.forEach { it.dispose() }
+    override fun removeAllChildren(detachPlatformView: Boolean) {
+        children.forEach { it.dispose(detachPlatformView) }
         children.clear()
     }
 
     override fun pauseAllChildren() {
         children.forEach {
-            if (it.state != Paused) it.dispose()
+            if (it.state != Paused) it.pause()
         }
     }
 
@@ -75,17 +75,19 @@ internal class InternalViewNode : ViewNode {
         state = Prepared
     }
 
-    private fun dispose() {
+    private fun dispose(detachPlatformView: Boolean) {
         if (state == Disposed) {
             error("This ViewNode is already disposed.")
         }
         providedViewLocals.clear()
-        removeAllChildren()
-        val platformView = platformView
-        if (platformView != null) {
-            findParentPlatformView()?.removeChild(platformView)
-            this.platformView = null
+        if (detachPlatformView) {
+            val platformView = platformView
+            if (platformView != null) {
+                findParentPlatformView()?.removeChild(platformView)
+            }
         }
+        removeAllChildren(platformView == null && detachPlatformView)
+        this.platformView = null
         parent = null
         callbacksOnDisposed.forEach { it.invoke() }
         callbacksOnDisposed.clear()
@@ -103,7 +105,7 @@ internal class InternalViewNode : ViewNode {
         callbacksOnPrepared.add(block)
     }
 
-    fun pause() {
+    private fun pause() {
         if (state != Prepared) {
             error("This ViewNode should be prepared.")
         }
