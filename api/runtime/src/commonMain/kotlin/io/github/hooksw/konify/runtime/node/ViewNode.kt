@@ -7,8 +7,10 @@ sealed interface ViewNode {
     // -------- Hierarchy --------
 
     fun createChild(): ViewNode
-
-    fun removeAllChildren(detachPlatformView: Boolean)
+    val children:List<ViewNode>
+    fun addNode(node: ViewNode)
+    fun removeAllChildren()
+    fun detachChildren()
     fun pauseAllChildren()
     fun resumeAllChildren()
 

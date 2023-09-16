@@ -16,7 +16,6 @@ class MainActivity : AppCompatActivity() {
         setContent {
 
             val booleanState = mutableStateOf(false)
-
             Switch {
                 If(booleanState) {
                     Text("Hello")
@@ -25,6 +24,7 @@ class MainActivity : AppCompatActivity() {
                     Text("World")
                 }
             }
+            Text("bottom")
 
             LaunchedEffect {
                 while (true) {

@@ -1,5 +1,7 @@
 package io.github.hooksw.konify.runtime.state
 
+import io.github.hooksw.konify.runtime.utils.fastForEach
+
 internal class ObservedState<T>(
     initialValue: T,
     private val equality: Equality<T>
@@ -16,7 +18,7 @@ internal class ObservedState<T>(
         }
 
     private fun onUpdate(new: T) {
-        for (observer in observers) {
+        observers.fastForEach {observer->
             observer(new)
         }
     }

@@ -2,6 +2,8 @@ package io.github.hooksw.konify.runtime
 
 import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.state.State
+import io.github.hooksw.konify.runtime.utils.fastForEach
+import io.github.hooksw.konify.runtime.utils.fastForEachIndex
 
 sealed interface SwitchScope {
     fun If(
@@ -13,15 +15,17 @@ sealed interface SwitchScope {
 }
 
 inline fun ViewNode.Switch(crossinline function: SwitchScope.() -> Unit) {
-    val scope = SwitchScopeImpl(this)
+    val switchNode = createChild()
+    val scope = SwitchScopeImpl(switchNode)
     scope.function()
     scope.prepare()
+    switchNode.prepare()
 }
 
 // -------- Internal --------
 
 @PublishedApi
-internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
+internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
     private val notifyObserver: (Any?) -> Unit = { notifyChange() }
 
     private var prepared: Boolean = false
@@ -34,36 +38,56 @@ internal class SwitchScopeImpl(private val node: ViewNode) : SwitchScope {
 
     private var lastCondition: State<Boolean>? = null
 
+    private lateinit var cacheNodes: MutableList<List<ViewNode>?>
+
     fun prepare() {
         for (condition in ifConditions) {
             condition.bind(notifyObserver)
         }
-        node.onPrepared(this::notifyChange)
-        node.onDispose(this::dispose)
+        cacheNodes = MutableList(ifConditions.size + 1) { null }
+        switchNode.onPrepared(this::notifyChange)
+        switchNode.onDispose(this::dispose)
         prepared = true
     }
 
     private fun notifyChange() {
         val lastCondition = lastCondition
-        for (condition in ifConditions) {
-            if (condition.value.not()) {
-                continue
+        var match = false
+        ifConditions.fastForEachIndex { index, condition ->
+            if (condition.value) {
+                if (condition != lastCondition) {
+                    switchNode.detachChildren()
+                    this.lastCondition = condition
+                    val currentConditionIndex = ifConditions.indexOf(condition)
+                    val cacheNode = cacheNodes[index]
+                    if (cacheNode.isNullOrEmpty()) {
+                        switchNode.(ifBlocks[currentConditionIndex])()
+                        cacheNodes[index] = switchNode.children
+                    } else {
+                        cacheNode.fastForEach {
+                            switchNode.addNode(it)
+                        }
+                    }
+                } else {
+                    return
+                }
+                match = true
             }
-            if (condition != lastCondition) {
-                node.removeAllChildren()
-                this.lastCondition = condition
-                val currentConditionIndex = ifConditions.indexOf(condition)
-                node.(ifBlocks[currentConditionIndex])()
-            }
-            return
         }
+        if (match) return
         val elseBlock = elseBlock
+        this.lastCondition = null
         if (elseBlock != null) {
-            if (lastCondition != null) {
-                node.removeAllChildren()
-                this.lastCondition = null
+            switchNode.detachChildren()
+            val elseNodes = cacheNodes.last()
+            if (elseNodes.isNullOrEmpty()) {
+                switchNode.elseBlock()
+                cacheNodes[cacheNodes.size - 1] = switchNode.children
+            } else {
+                elseNodes.fastForEach {
+                    switchNode.addNode(it)
+                }
             }
-            node.elseBlock()
         }
     }
 

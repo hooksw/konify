@@ -3,34 +3,65 @@ package io.github.hooksw.konify.runtime.node
 import io.github.hooksw.konify.runtime.node.InternalViewNode.LifecycleState.*
 import io.github.hooksw.konify.runtime.platform.PlatformView
 import io.github.hooksw.konify.runtime.state.State
+import io.github.hooksw.konify.runtime.utils.fastForEach
 
 internal class InternalViewNode : ViewNode {
     // -------- Hierarchy --------
 
     private var parent: InternalViewNode? = null
 
-    private val children: MutableList<InternalViewNode> = ArrayList(4)
+    private val _children: MutableList<InternalViewNode> = ArrayList(4)
+
+    override val children: List<ViewNode>
+        get() = ArrayList(_children)
 
     override fun createChild(): InternalViewNode {
         val child = InternalViewNode()
-        children.add(child)
+        _children.add(child)
         child.parent = this
         return child
     }
 
-    override fun removeAllChildren(detachPlatformView: Boolean) {
-        children.forEach { it.dispose(detachPlatformView) }
-        children.clear()
+    override fun addNode(node: ViewNode) {
+        _children.add(node as InternalViewNode)
+        node.parent = this
+        node.registerLatestPlatformView()
+        node.prepare()
     }
 
+    private fun registerLatestPlatformView() {
+        if (platformView == null) {
+            _children.fastForEach {
+                it.registerLatestPlatformView()
+            }
+        } else {
+            val parentPlatformView=findParentPlatformView()!!
+            parentPlatformView.appendChild(platformView!!)
+        }
+    }
+
+
+    override fun removeAllChildren() {
+        _children.fastForEach { it.disposeRecursion(true, true) }
+        _children.clear()
+    }
+
+    override fun detachChildren() {
+        _children.fastForEach { it.disposeRecursion(true, false) }
+        _children.clear()
+    }
+
+
     override fun pauseAllChildren() {
-        children.forEach {
-            if (it.state != Paused) it.pause()
+        _children.fastForEach {
+            if (it.state == Prepared) it.pause()
         }
     }
 
     override fun resumeAllChildren() {
-        children.forEach { it.prepare() }
+        _children.fastForEach {
+            if (it.state == Paused) it.prepare()
+        }
     }
 
     // -------- Platform --------
@@ -40,7 +71,7 @@ internal class InternalViewNode : ViewNode {
     override fun registerPlatformView(platformView: PlatformView) {
         this.platformView = platformView
         val parent = findParentPlatformView()
-        parent?.addChild(platformView)
+        parent?.appendChild(platformView)
     }
 
     private fun findParentPlatformView(): PlatformView? {
@@ -67,31 +98,30 @@ internal class InternalViewNode : ViewNode {
         if (state == Prepared) {
             error("This ViewNode is already prepared.")
         }
-        if (state == Disposed) {
-            error("This ViewNode has been disposed.")
-        }
-        callbacksOnPrepared.forEach { it.invoke() }
+        callbacksOnPrepared.fastForEach { it.invoke() }
 //        callbacksOnPrepared.clear()
         state = Prepared
     }
 
-    private fun dispose(detachPlatformView: Boolean) {
+    private fun disposeRecursion(detachPlatformView: Boolean, release: Boolean) {
         if (state == Disposed) {
             error("This ViewNode is already disposed.")
         }
-        providedViewLocals.clear()
+        _children.fastForEach { it.disposeRecursion(platformView == null && detachPlatformView, release) }
         if (detachPlatformView) {
             val platformView = platformView
             if (platformView != null) {
                 findParentPlatformView()?.removeChild(platformView)
             }
         }
-        removeAllChildren(platformView == null && detachPlatformView)
-        this.platformView = null
-        parent = null
-        callbacksOnDisposed.forEach { it.invoke() }
-        callbacksOnDisposed.clear()
-        callbacksOnPrepared.clear()
+        callbacksOnDisposed.fastForEach { it.invoke() }
+        if (release) {
+            this.platformView = null
+            parent = null
+            callbacksOnDisposed.clear()
+            callbacksOnPrepared.clear()
+            providedViewLocals.clear()
+        }
         state = Disposed
     }
 
@@ -109,19 +139,11 @@ internal class InternalViewNode : ViewNode {
         if (state != Prepared) {
             error("This ViewNode should be prepared.")
         }
+        callbacksOnDisposed.fastForEach { it.invoke() }
         pauseAllChildren()
-        callbacksOnDisposed.forEach { it.invoke() }
         state = Paused
     }
 
-    fun resume() {
-        if (state != Paused) {
-            error("This ViewNode should be paused.")
-        }
-        resumeAllChildren()
-        callbacksOnPrepared.forEach { it.invoke() }
-        state = Prepared
-    }
 
     override fun onDispose(block: () -> Unit) {
         if (state == Disposed) {

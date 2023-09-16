@@ -2,7 +2,7 @@ package io.github.hooksw.konify.runtime.node
 
 import io.github.hooksw.konify.runtime.state.State
 import io.github.hooksw.konify.runtime.state.mutableStateOf
-import io.github.hooksw.konify.runtime.state.staticStateOf
+import io.github.hooksw.konify.runtime.state.constant
 
 // -------- ViewLocal --------
 
@@ -52,7 +52,7 @@ class ProvidedViewLocal<T>(
 @PublishedApi
 internal class DefaultViewLocal<T>(private val defaultProvider: () -> T) : ViewLocal<T> {
 
-    internal val default: State<T> by lazy { staticStateOf(defaultProvider()) }
+    internal val default: State<T> by lazy { constant(defaultProvider()) }
 
     override val ViewNode.current: State<T>
         get() = getViewLocal(this@DefaultViewLocal) ?: default
