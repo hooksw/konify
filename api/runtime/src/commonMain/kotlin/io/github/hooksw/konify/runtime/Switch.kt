@@ -4,7 +4,6 @@ import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.state.State
 import io.github.hooksw.konify.runtime.utils.fastForEach
 import io.github.hooksw.konify.runtime.utils.fastForEachIndex
-
 sealed interface SwitchScope {
     fun If(
         condition: State<Boolean>,
@@ -45,8 +44,8 @@ internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
             condition.bind(notifyObserver)
         }
         cacheNodes = MutableList(ifConditions.size + 1) { null }
-        switchNode.onPrepared(this::notifyChange)
-        switchNode.onDispose(this::dispose)
+        switchNode.registerPrepared(this::notifyChange)
+        switchNode.registerDisposed(this::dispose)
         prepared = true
     }
 
@@ -65,7 +64,7 @@ internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
                         cacheNodes[index] = switchNode.children
                     } else {
                         cacheNode.fastForEach {
-                            switchNode.addNode(it)
+                            switchNode.insertNode(it)
                         }
                     }
                 } else {
@@ -85,7 +84,7 @@ internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
                 cacheNodes[cacheNodes.size - 1] = switchNode.children
             } else {
                 elseNodes.fastForEach {
-                    switchNode.addNode(it)
+                    switchNode.insertNode(it)
                 }
             }
         }

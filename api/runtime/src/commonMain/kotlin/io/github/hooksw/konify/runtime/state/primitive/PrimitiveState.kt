@@ -1,22 +1,36 @@
 package io.github.hooksw.konify.runtime.state.primitive
 
-import io.github.hooksw.konify.runtime.state.MutableState
 
+interface MutableIntState {
+    var value: Int
 
-interface MutableIntState : MutableState<Int> {
-    override var value: Int
+    fun bind(observer: (Int) -> Unit)
+
+    fun unbind(observer: (Int) -> Unit)
 }
 
-interface MutableLongState : MutableState<Long> {
-    override var value: Long
+interface MutableLongState {
+    var value: Long
+
+    fun bind(observer: (Long) -> Unit)
+
+    fun unbind(observer: (Long) -> Unit)
 }
 
-interface MutableFloatState : MutableState<Float> {
-    override var value: Float
+interface MutableFloatState {
+    var value: Float
+
+    fun bind(observer: (Float) -> Unit)
+
+    fun unbind(observer: (Float) -> Unit)
 }
 
-interface MutableDoubleState : MutableState<Double> {
-    override var value: Double
+interface MutableDoubleState {
+    var value: Double
+
+    fun bind(observer: (Double) -> Unit)
+
+    fun unbind(observer: (Double) -> Unit)
 }
 
 

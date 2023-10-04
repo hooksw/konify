@@ -1,5 +1,7 @@
 package io.github.hooksw.konify.runtime.state.primitive
 
+import io.github.hooksw.konify.runtime.utils.fastForEach
+
 internal class ObservedFloatState(
     initialValue: Float,
 ) : MutableFloatState {
@@ -16,7 +18,7 @@ internal class ObservedFloatState(
 
 
     private fun onUpdate(new: Float) {
-        for (observer in observers) {
+        observers.fastForEach {observer->
             observer(new)
         }
     }

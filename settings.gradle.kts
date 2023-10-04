@@ -26,3 +26,4 @@ include(":api:ui")
 
 include(":sample")
 include(":sample:android")
+include(":compiler")

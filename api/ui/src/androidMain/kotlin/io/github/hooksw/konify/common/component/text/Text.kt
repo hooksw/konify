@@ -4,7 +4,7 @@ import android.content.Context
 import android.widget.TextView
 import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.node.component
-import io.github.hooksw.konify.runtime.node.getCurrent
+import io.github.hooksw.konify.runtime.local.getCurrent
 import io.github.hooksw.konify.runtime.platform.LocalContext
 import io.github.hooksw.konify.runtime.platform.PlatformView
 

@@ -1,5 +1,7 @@
 package io.github.hooksw.konify.runtime.state.primitive
 
+import io.github.hooksw.konify.runtime.utils.fastForEach
+
 internal class ObservedLongState(
     initialValue: Long,
 ) : MutableLongState {
@@ -16,7 +18,7 @@ internal class ObservedLongState(
 
 
     private fun onUpdate(new: Long) {
-        for (observer in observers) {
+        observers.fastForEach {observer->
             observer(new)
         }
     }

@@ -2,12 +2,19 @@ package io.github.hooksw.konify.runtime.platform
 
 import org.w3c.dom.HTMLElement
 
-actual class PlatformView(val element: HTMLElement) {
-    actual fun appendChild(platformView: PlatformView) {
-        element.appendChild(platformView.element)
+actual typealias ViewElement = HTMLElement
+
+actual value class PlatformView(val view: ViewElement) {
+    actual fun addView(platformView: PlatformView) {
+        view.appendChild(platformView.view)
     }
 
-    actual fun removeChild(platformView: PlatformView) {
-        element.removeChild(platformView.element)
+    actual fun removeFromParent() {
+        view.parentElement?.removeChild(view)
+    }
+
+    actual fun insertView(platformView: PlatformView, at: Int) {
+        view.insertBefore(platformView.view, view.children.item(at))
     }
 }
+

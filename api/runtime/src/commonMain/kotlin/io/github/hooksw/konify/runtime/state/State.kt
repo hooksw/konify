@@ -35,7 +35,7 @@ operator fun <T> MutableState<T>.setValue(thisRef: Any?, property: KProperty<*>,
 
 fun <T> State<T>.bindWithLifecycle(node: ViewNode,observer: (T)->Unit) {
     bind(observer)
-    node.onDispose {
+    node.registerDisposed {
         unbind(observer)
     }
 }

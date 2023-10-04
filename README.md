@@ -131,6 +131,12 @@ Switch {
 `If` receive a State<Boolean> state and a` @View ()->Unit ` callback.  
 In the code above, when one of stateA,stateB,stateC changes, `Switch` will check the state in order of declaration, the first callback that state value is `true when will execute.
 
+### For
+```kotlin
+For(list=State<List<*>>,key={it.id}){item->
+    Text(text=item.toString())
+}
+```
 #### ViewLocal
 If you are familiar with Compose, you must know `CompositionLocal`.in Konify ,it's `ViewLocal`.  
 The main difference of usage is that the value of ViewLocal should be a State type, even if it won't be changed, it's a design compromise.  
@@ -169,7 +175,7 @@ fun C(){
 ```
 #### How to Wrap Native View
 
-first we declare a expect function, for Example,Text()
+first we declare an expect function, for example,Text()
 ```kotlin
 expect fun Text(text:State<String>)
 ```

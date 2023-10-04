@@ -1,7 +1,8 @@
 package io.github.hooksw.konify.runtime.platform
 
 import android.content.Context
-import io.github.hooksw.konify.runtime.node.*
+import io.github.hooksw.konify.runtime.local.ViewLocal
+import io.github.hooksw.konify.runtime.local.viewLocalOf
 
 val LocalContext: ViewLocal<Context> = viewLocalOf { late("Context") }
 

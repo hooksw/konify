@@ -1,8 +1,11 @@
 package io.github.hooksw.konify.runtime.platform
 
-expect class PlatformView {
+expect abstract class ViewElement
 
-    fun appendChild(platformView: PlatformView)
+expect value class PlatformView(val view: ViewElement) {
+    fun insertView(platformView: PlatformView, at: Int)
+    fun addView(platformView: PlatformView)
 
-    fun removeChild(platformView: PlatformView)
+    fun removeFromParent()
 }
+

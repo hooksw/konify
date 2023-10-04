@@ -13,7 +13,7 @@ fun ViewNode.SideEffect(
     vararg keys: State<*>,
     effect: () -> Unit
 ) {
-    onPrepared(effect)
+    registerPrepared(effect)
     for (key in keys) {
         key.bindWithLifecycle(this) {
             effect()
@@ -27,10 +27,10 @@ fun ViewNode.DisposableEffect(
     effect: () -> DisposeHandle
 ) {
     var handle: DisposeHandle? = null
-    onPrepared {
+    registerPrepared {
         handle = effect()
     }
-    onDispose {
+    registerDisposed {
         handle?.onDispose()
     }
     for (key in keys) {
@@ -47,10 +47,10 @@ fun ViewNode.LaunchedEffect(
 ) {
     val scope = CoroutineScope(Dispatchers.Main.immediate)
     var job: Job? = null
-    onPrepared {
+    registerPrepared {
         job = scope.launch(block = effect)
     }
-    onDispose {
+    registerDisposed {
         job?.cancel()
     }
     for (key in keys) {

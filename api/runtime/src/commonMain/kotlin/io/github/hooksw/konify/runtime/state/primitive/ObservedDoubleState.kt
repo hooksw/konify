@@ -1,5 +1,7 @@
 package io.github.hooksw.konify.runtime.state.primitive
 
+import io.github.hooksw.konify.runtime.utils.fastForEach
+
 internal class ObservedDoubleState(
     initialValue: Double,
 ) : MutableDoubleState {
@@ -16,7 +18,7 @@ internal class ObservedDoubleState(
 
 
     private fun onUpdate(new: Double) {
-        for (observer in observers) {
+        observers.fastForEach {observer->
             observer(new)
         }
     }
