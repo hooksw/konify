@@ -25,4 +25,6 @@ actual value class PlatformView(val view: ViewElement) {
     actual fun insertView(platformView: PlatformView, at: Int) {
         (view as ViewGroup).addView(platformView.view,at)
     }
+
+    actual fun index(): Int= (view.parent as ViewGroup).indexOfChild(view)
 }

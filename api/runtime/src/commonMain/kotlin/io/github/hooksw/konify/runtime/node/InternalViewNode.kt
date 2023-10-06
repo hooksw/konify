@@ -42,7 +42,6 @@ internal class InternalViewNode : ViewNode {
     override fun insertNodeTo(node: ViewNode, index: Int) {
         children.add(index, node as InternalViewNode)
         node.parent = this
-        node.registerLatestPlatformView()
         node.prepareRecursion()
     }
 
@@ -51,10 +50,10 @@ internal class InternalViewNode : ViewNode {
     }
 
     private fun prepareRecursion() {
+        prepare()
         children.fastForEach {
             it.prepareRecursion()
         }
-        prepare()
     }
 
     override fun release() {
@@ -78,29 +77,19 @@ internal class InternalViewNode : ViewNode {
 
     private var platformView: PlatformView? = null
     private var parentPlatformView: PlatformView? = null
-    private var totalDirectPlatformViewCount = 0
+
+    val isAttachPlatformView
+        get() = platformView != null
 
 
     fun registerPlatformView(platformView: PlatformView) {
         this.platformView = platformView
-        findParentPlatformView()?.addView(platformView)
+        findParentPlatformView().addView(platformView)
     }
 
-
-    private fun registerLatestPlatformView() {
-        if (platformView == null) {
-            children.fastForEach {
-                it.registerLatestPlatformView()
-            }
-        } else {
-            val parentPlatformView = findParentPlatformView()!!
-            parentPlatformView.addView(platformView!!)
-        }
-    }
-
-    private fun findParentPlatformView(): PlatformView? {
-        val parent = parent ?: return null
-        return parent.platformView ?: parent.findParentPlatformView()
+    private fun findParentPlatformView(): PlatformView {
+        val parent = parent ?: error("node should be added first.")
+        return parent.platformView ?: parent.parentPlatformView ?: error("parentPlatformView mustn't be null")
     }
 
     // -------- Lifecycle --------
@@ -121,6 +110,10 @@ internal class InternalViewNode : ViewNode {
     override fun prepare() {
         if (state == Prepared) {
             error("This ViewNode is already prepared.")
+        }
+        if (platformView != null && parentPlatformView == null) {
+            parentPlatformView = findParentPlatformView()
+            parentPlatformView!!.addView(platformView!!)
         }
         callbacksOnPrepared.fastForEach { it.invoke() }
 //        callbacksOnPrepared.clear()
