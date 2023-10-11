@@ -7,7 +7,6 @@ import io.github.hooksw.konify.runtime.platform.PlatformView
 import io.github.hooksw.konify.runtime.state.State
 import io.github.hooksw.konify.runtime.utils.fastForEach
 import kotlin.jvm.JvmField
-import kotlin.jvm.JvmStatic
 
 /*
 node生命周期和各种初始化流程
@@ -28,9 +27,11 @@ node生命周期和各种初始化流程
 internal class InternalViewNode : ViewNode {
     // -------- Hierarchy --------
 
+    private var parentPlatformView: PlatformView? = null
     private var parent: InternalViewNode? = null
 
-    private val children: MutableList<InternalViewNode> = ArrayList(4)
+    @JvmField
+    internal val children: MutableList<InternalViewNode> = ArrayList(4)
 
     override fun createChild(): InternalViewNode {
         val child = InternalViewNode()
@@ -40,13 +41,24 @@ internal class InternalViewNode : ViewNode {
     }
 
     override fun insertNodeTo(node: ViewNode, index: Int) {
+        require(index >= 0) {
+            "index less than 0"
+        }
         children.add(index, node as InternalViewNode)
+        if (index == 0) {
+            val thisIndex = parent!!.children.indexOf(this)
+
+        } else {
+            children[index - 1]
+        }
         node.parent = this
         node.prepareRecursion()
     }
 
-    override fun removeNodeAt(index: Int) {
-
+    override fun detachNodeAt(index: Int): InternalViewNode {
+        val node = children.removeAt(index)
+        node.detach()
+        return node
     }
 
     private fun prepareRecursion() {
@@ -57,13 +69,12 @@ internal class InternalViewNode : ViewNode {
     }
 
     override fun release() {
-        disposeRecursion(true, true)
+        disposeRecursion(true, release = true)
         children.clear()
     }
 
     override fun detach() {
-        disposeRecursion(true, false)
-        children.clear()
+        disposeRecursion(true, release = false)
     }
 
 
@@ -75,8 +86,7 @@ internal class InternalViewNode : ViewNode {
 
     // -------- Platform --------
 
-    private var platformView: PlatformView? = null
-    private var parentPlatformView: PlatformView? = null
+    internal var platformView: PlatformView? = null
 
     val isAttachPlatformView
         get() = platformView != null
@@ -127,7 +137,7 @@ internal class InternalViewNode : ViewNode {
         }
         children.fastForEach { it.disposeRecursion(platformView == null && detachPlatformView, release) }
         if (detachPlatformView) {
-            this.platformView?.removeFromParent()
+//            this.platformView?.removeFromParent()
         }
         callbacksOnDisposed.fastForEach { it.invoke() }
         if (release) {

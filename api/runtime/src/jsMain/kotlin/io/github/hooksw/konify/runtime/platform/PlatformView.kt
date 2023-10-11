@@ -3,21 +3,22 @@ package io.github.hooksw.konify.runtime.platform
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.asList
 
+@Suppress("ACTUAL_WITHOUT_EXPECT")
 actual typealias ViewElement = HTMLElement
 
-actual value class PlatformView(val view: ViewElement) {
-    actual fun addView(platformView: PlatformView) {
+class JsView(override val view: ViewElement) : PlatformView(view) {
+    override fun addView(platformView: PlatformView) {
         view.appendChild(platformView.view)
     }
 
-    actual fun removeFromParent() {
-        view.parentElement?.removeChild(view)
+    override fun removeView(platformView: PlatformView) {
+        view.removeChild(platformView.view)
     }
 
-    actual fun insertView(platformView: PlatformView, at: Int) {
+    override fun insertView(platformView: PlatformView, at: Int) {
         view.insertBefore(platformView.view, view.children.item(at))
     }
 
-    actual fun index(): Int= view.parentElement!!.children.asList().indexOf(view)
+    override fun index(): Int = view.parentElement!!.children.asList().indexOf(view)
 
 }

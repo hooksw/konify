@@ -1,9 +1,11 @@
 package io.github.hooksw.konify.runtime
 
+import io.github.hooksw.konify.runtime.node.InternalViewNode
 import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.state.State
 import io.github.hooksw.konify.runtime.utils.fastForEach
 import io.github.hooksw.konify.runtime.utils.fastForEachIndex
+
 sealed interface SwitchScope {
     fun If(
         condition: State<Boolean>,
@@ -50,12 +52,13 @@ internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
     }
 
     private fun notifyChange() {
+        val switchNode = switchNode as InternalViewNode
         val lastCondition = lastCondition
         var match = false
         ifConditions.fastForEachIndex { index, condition ->
             if (condition.value) {
                 if (condition != lastCondition) {
-                    switchNode.detachChildren()
+                    switchNode.detachNodeAt(0)
                     this.lastCondition = condition
                     val currentConditionIndex = ifConditions.indexOf(condition)
                     val cacheNode = cacheNodes[index]
@@ -64,7 +67,7 @@ internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
                         cacheNodes[index] = switchNode.children
                     } else {
                         cacheNode.fastForEach {
-                            switchNode.insertNode(it)
+                            switchNode.insertNodeTo(it,0)
                         }
                     }
                 } else {
@@ -77,21 +80,21 @@ internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
         val elseBlock = elseBlock
         this.lastCondition = null
         if (elseBlock != null) {
-            switchNode.detachChildren()
+            switchNode.detachNodeAt(0)
             val elseNodes = cacheNodes.last()
             if (elseNodes.isNullOrEmpty()) {
                 switchNode.elseBlock()
                 cacheNodes[cacheNodes.size - 1] = switchNode.children
             } else {
                 elseNodes.fastForEach {
-                    switchNode.insertNode(it)
+                    switchNode.insertNodeTo(it,0)
                 }
             }
         }
     }
 
     private fun dispose() {
-        for (condition in ifConditions) {
+        ifConditions.fastForEach {condition->
             condition.unbind(notifyObserver)
         }
     }

@@ -50,6 +50,7 @@ allprojects {
             getByName("commonMain") {
                 dependencies {
                     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                    implementation("androidx.collection:collection:1.4.0-alpha01")
                 }
             }
             getByName("commonTest") {

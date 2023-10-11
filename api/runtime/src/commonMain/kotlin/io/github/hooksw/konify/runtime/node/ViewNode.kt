@@ -9,8 +9,8 @@ sealed interface ViewNode {
 
     fun createChild(): ViewNode
 
-    fun insertNodeTo(node: ViewNode, index: Int = -1)
-    fun removeNodeAt(index: Int)
+    fun insertNodeTo(node: ViewNode, index: Int)
+    fun detachNodeAt(index: Int):ViewNode
 
     // -------- Lifecycle --------
 
