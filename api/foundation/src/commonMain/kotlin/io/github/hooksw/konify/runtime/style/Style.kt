@@ -1,10 +1,9 @@
 package io.github.hooksw.konify.runtime.style
 
-import io.github.hooksw.konify.runtime.annotion.Once
-import io.github.hooksw.konify.runtime.annotion.StyleBuilder
+import io.github.hooksw.konify.runtime.annotation.StyleBuilder
 import io.github.hooksw.konify.runtime.unit.Density
 import io.github.hooksw.konify.runtime.platform.PlatformView
-import io.github.hooksw.konify.runtime.state.State
+import io.github.hooksw.konify.runtime.signal.Signal
 import kotlin.reflect.KClass
 
 /*
@@ -25,11 +24,11 @@ interface StyleNode<T> {
     fun update(density: Density,platformView: PlatformView)
 }
 
-@Once
+@Stateless
 class Style private constructor(
     private val extraNodes: Map<KClass<out StyleNode<*>>, StyleNode<*>> =
         extraDefaultNodes.entries.associate { it.key to it.value.invoke() },
-    internal val bindMap: MutableMap<String, State<*>> = hashMapOf()
+    internal val bindMap: MutableMap<String, Signal<*>> = hashMapOf()
 ) {
     internal val paddingStyleNode= PaddingStyleNode()
     var ready = false
@@ -50,7 +49,7 @@ class Style private constructor(
     }
 
     operator fun plus(other: Style): Style {
-        return Style(extraNodes + other.extraNodes, (bindMap + other.bindMap) as MutableMap<String, State<*>>)
+        return Style(extraNodes + other.extraNodes, (bindMap + other.bindMap) as MutableMap<String, Signal<*>>)
     }
 
     companion object {

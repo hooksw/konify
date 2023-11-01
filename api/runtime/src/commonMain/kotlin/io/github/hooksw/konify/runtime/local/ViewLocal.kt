@@ -1,15 +1,15 @@
 package io.github.hooksw.konify.runtime.local
 
 import io.github.hooksw.konify.runtime.node.ViewNode
-import io.github.hooksw.konify.runtime.state.State
-import io.github.hooksw.konify.runtime.state.mutableStateOf
-import io.github.hooksw.konify.runtime.state.constant
+import io.github.hooksw.konify.runtime.signal.Signal
+import io.github.hooksw.konify.runtime.signal.constant
+import io.github.hooksw.konify.runtime.signal.signalOf
 
 // -------- ViewLocal --------
 
 interface ViewLocal<T> {
 
-    val ViewNode.current: State<T>
+    val ViewNode.current: Signal<T>
 }
 
 fun <T> viewLocalOf(defaultProvider: () -> T): ViewLocal<T> {
@@ -21,14 +21,14 @@ fun <T> viewLocalOf(defaultProvider: () -> T): ViewLocal<T> {
 infix fun <T> ViewLocal<T>.provides(value: T): ProvidedViewLocal<T> {
     return ProvidedViewLocal(
         viewLocal = this,
-        state = mutableStateOf(value)
+        signal = signalOf(value)
     )
 }
 
-infix fun <T> ViewLocal<T>.provides(state: State<T>): ProvidedViewLocal<T> {
+infix fun <T> ViewLocal<T>.provides(signal: Signal<T>): ProvidedViewLocal<T> {
     return ProvidedViewLocal(
         viewLocal = this,
-        state = state
+        signal = signal
     )
 }
 
@@ -45,7 +45,7 @@ fun ViewNode.ViewLocalProvider(
 
 class ProvidedViewLocal<T>(
     val viewLocal: ViewLocal<T>,
-    val state: State<T>
+    val signal: Signal<T>
 )
 
 // -------- Internal --------
@@ -53,8 +53,8 @@ class ProvidedViewLocal<T>(
 @PublishedApi
 internal class DefaultViewLocal<T>(private val defaultProvider: () -> T) : ViewLocal<T> {
 
-    internal val default: State<T> by lazy { constant(defaultProvider()) }
+    internal val default: Signal<T> by lazy { constant(defaultProvider()) }
 
-    override val ViewNode.current: State<T>
+    override val ViewNode.current: Signal<T>
         get() = getViewLocal(this@DefaultViewLocal) ?: default
 }

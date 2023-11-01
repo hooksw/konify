@@ -2,25 +2,27 @@ package io.github.hooksw.konify.sample.android
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.DiffUtil.DiffResult
 import io.github.hooksw.konify.common.component.text.Text
 import io.github.hooksw.konify.runtime.LaunchedEffect
 import io.github.hooksw.konify.runtime.Switch
 import io.github.hooksw.konify.runtime.platform.setContent
-import io.github.hooksw.konify.runtime.state.mutableStateOf
-import kotlinx.coroutines.delay
+import io.github.hooksw.konify.runtime.signal.signalOf
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DiffUtil
-        DiffResult
         setContent {
-
-            val booleanState = mutableStateOf(false)
+            val showA = signalOf(false)
+            val showB = signalOf(false)
+            LaunchedEffect {
+                showA.value=true
+                showB.value=true
+            }
             Switch {
-                If(booleanState) {
+                If(showA) {
+                    Text("Hello")
+                }
+                If(showB) {
                     Text("Hello")
                 }
                 Else {
@@ -29,12 +31,6 @@ class MainActivity : AppCompatActivity() {
             }
             Text("bottom")
 
-            LaunchedEffect {
-                while (true) {
-                    delay(1000L)
-                    booleanState.value = !booleanState.value
-                }
-            }
         }
     }
 }

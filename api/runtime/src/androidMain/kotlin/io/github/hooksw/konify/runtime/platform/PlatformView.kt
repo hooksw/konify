@@ -2,13 +2,10 @@ package io.github.hooksw.konify.runtime.platform
 
 import android.view.View
 import android.view.ViewGroup
-import java.util.ArrayList
 
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-actual typealias ViewElement = View
 
-class AndroidView(override val view: ViewElement) : PlatformView(view) {
-    override fun addView(platformView: PlatformView) {
+actual class PlatformView(val view: View) {
+    actual fun addView(platformView: PlatformView) {
         val childView = platformView.view
         if (view !is ViewGroup) {
             error("Cannot add $childView to $view, because the later is not a ViewGroup")
@@ -16,13 +13,18 @@ class AndroidView(override val view: ViewElement) : PlatformView(view) {
         view.addView(platformView.view)
     }
 
-    override fun removeView(platformView: PlatformView) {
-        (view as ViewGroup).removeView(platformView.view)
+    actual fun removeView(toveRemoved:PlatformView){
+        (view as ViewGroup).removeView(toveRemoved.view)
     }
 
-    override fun insertView(platformView: PlatformView, at: Int) {
+    actual fun insertView(platformView: PlatformView, at: Int) {
         (view as ViewGroup).addView(platformView.view, at)
     }
 
-    override fun index(): Int = (view.parent as ViewGroup).indexOfChild(view)
+    actual fun children(): List<PlatformView> = buildList {
+        val view = view as ViewGroup
+        for (i in 0..<view.childCount) {
+            add(PlatformView(view.getChildAt(i)))
+        }
+    }
 }

@@ -9,7 +9,7 @@ import io.github.hooksw.konify.runtime.node.ViewNode
 import io.github.hooksw.konify.runtime.local.provides
 
 fun Activity.setContent(children:  ViewNode.() -> Unit) {
-    val root = InternalViewNode()
+    val root = InternalViewNode.createRoot()
     val frameLayout = LinearLayout(this).apply {
         layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -18,7 +18,7 @@ fun Activity.setContent(children:  ViewNode.() -> Unit) {
         orientation=LinearLayout.VERTICAL
         tag = root
     }
-    val platformView = AndroidView(frameLayout)
+    val platformView = PlatformView(frameLayout)
     root.registerPlatformView(platformView)
     root.ViewLocalProvider(LocalContext provides this){
         children()

@@ -7,9 +7,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.10")
 
 //    testImplementation("com.github.tschuchortdev:kotlin-compile-testing:1.5.0")
-    testImplementation(fileTree("libs",){
-        include("*.jar")
-    })
+    testImplementation("dev.zacsweers.kctfork:core:0.3.2")
     testImplementation(kotlin("test"))
 }
 

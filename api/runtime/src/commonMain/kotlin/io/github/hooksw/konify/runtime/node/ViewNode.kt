@@ -2,14 +2,14 @@ package io.github.hooksw.konify.runtime.node
 
 import io.github.hooksw.konify.runtime.local.ProvidedViewLocal
 import io.github.hooksw.konify.runtime.local.ViewLocal
-import io.github.hooksw.konify.runtime.state.State
+import io.github.hooksw.konify.runtime.signal.Signal
 
 sealed interface ViewNode {
     // -------- Hierarchy --------
 
     fun createChild(): ViewNode
 
-    fun insertNodeTo(node: ViewNode, index: Int)
+    fun insertNode(node: ViewNode, index: Int)
     fun detachNodeAt(index: Int):ViewNode
 
     // -------- Lifecycle --------
@@ -19,10 +19,6 @@ sealed interface ViewNode {
 
     fun prepare()
 
-    fun pause()
-
-    fun resume()
-
     fun release()
 
     fun registerPrepared(block: () -> Unit)
@@ -31,7 +27,7 @@ sealed interface ViewNode {
 
     // -------- ViewLocal --------
 
-    fun <T> getViewLocal(viewLocal: ViewLocal<T>): State<T>?
+    fun <T> getViewLocal(viewLocal: ViewLocal<T>): Signal<T>?
 
     fun provideViewLocal(providedViewLocal: ProvidedViewLocal<*>)
 }

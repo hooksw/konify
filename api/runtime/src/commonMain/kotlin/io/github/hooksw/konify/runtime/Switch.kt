@@ -2,13 +2,13 @@ package io.github.hooksw.konify.runtime
 
 import io.github.hooksw.konify.runtime.node.InternalViewNode
 import io.github.hooksw.konify.runtime.node.ViewNode
-import io.github.hooksw.konify.runtime.state.State
-import io.github.hooksw.konify.runtime.utils.fastForEach
+import io.github.hooksw.konify.runtime.signal.*
+import io.github.hooksw.konify.runtime.signal.DerivedSignal
 import io.github.hooksw.konify.runtime.utils.fastForEachIndex
 
 sealed interface SwitchScope {
     fun If(
-        condition: State<Boolean>,
+        condition: ()->Boolean,
         block: ViewNode. () -> Unit
     )
 
@@ -16,90 +16,75 @@ sealed interface SwitchScope {
 }
 
 inline fun ViewNode.Switch(crossinline function: SwitchScope.() -> Unit) {
-    val switchNode = createChild()
-    val scope = SwitchScopeImpl(switchNode)
+    val scope = SwitchScopeImpl()
     scope.function()
     scope.prepare()
-    switchNode.prepare()
 }
 
 // -------- Internal --------
 
 @PublishedApi
-internal class SwitchScopeImpl(private val switchNode: ViewNode) : SwitchScope {
-    private val notifyObserver: (Any?) -> Unit = { notifyChange() }
-
+internal class SwitchScopeImpl() : SwitchScope {
     private var prepared: Boolean = false
 
-    private val ifConditions: MutableList<State<Boolean>> = ArrayList(2)
+    private val ifConditions: MutableList<()->Boolean> = ArrayList(2)
 
     private val ifBlocks: MutableList<ViewNode. () -> Unit> = ArrayList(2)
 
     private var elseBlock: (ViewNode.() -> Unit)? = null
 
-    private var lastCondition: State<Boolean>? = null
+    private var lastCondition: (()->Boolean)? = null
 
-    private lateinit var cacheNodes: MutableList<List<ViewNode>?>
+    private lateinit var cacheNodes: Array<ViewNode?>
 
     fun prepare() {
-        for (condition in ifConditions) {
-            condition.bind(notifyObserver)
-        }
-        cacheNodes = MutableList(ifConditions.size + 1) { null }
-        switchNode.registerPrepared(this::notifyChange)
-        switchNode.registerDisposed(this::dispose)
+        val owner= Owners.last()
+        (derived(nonEqualEquality()) {
+            notifyChange(owner)
+        } as DerivedSignal<Unit>).getValue()
+        cacheNodes = arrayOfNulls(ifConditions.size + 1)
         prepared = true
     }
 
-    private fun notifyChange() {
-        val switchNode = switchNode as InternalViewNode
+    private fun notifyChange(owner: Owner) {
+        val switchNode = owner as InternalViewNode
         val lastCondition = lastCondition
-        var match = false
+        var matchInCondition = false
         ifConditions.fastForEachIndex { index, condition ->
-            if (condition.value) {
+            if (condition()) {
                 if (condition != lastCondition) {
-                    switchNode.detachNodeAt(0)
+                    val child=switchNode.detachNodeAt(0)
                     this.lastCondition = condition
                     val currentConditionIndex = ifConditions.indexOf(condition)
                     val cacheNode = cacheNodes[index]
-                    if (cacheNode.isNullOrEmpty()) {
+                    if (cacheNode == null) {
                         switchNode.(ifBlocks[currentConditionIndex])()
-                        cacheNodes[index] = switchNode.children
+                        cacheNodes[index] = child
                     } else {
-                        cacheNode.fastForEach {
-                            switchNode.insertNodeTo(it,0)
-                        }
+                        switchNode.insertNode(cacheNode, 0)
                     }
                 } else {
                     return
                 }
-                match = true
+                matchInCondition = true
             }
         }
-        if (match) return
+        if (matchInCondition) return
         val elseBlock = elseBlock
         this.lastCondition = null
         if (elseBlock != null) {
-            switchNode.detachNodeAt(0)
+            val child = switchNode.detachNodeAt(0)
             val elseNodes = cacheNodes.last()
-            if (elseNodes.isNullOrEmpty()) {
+            if (elseNodes == null) {
                 switchNode.elseBlock()
-                cacheNodes[cacheNodes.size - 1] = switchNode.children
+                cacheNodes[cacheNodes.size - 1] = child
             } else {
-                elseNodes.fastForEach {
-                    switchNode.insertNodeTo(it,0)
-                }
+                switchNode.insertNode(elseNodes, 0)
             }
         }
     }
 
-    private fun dispose() {
-        ifConditions.fastForEach {condition->
-            condition.unbind(notifyObserver)
-        }
-    }
-
-    override fun If(condition: State<Boolean>, block: ViewNode.() -> Unit) {
+    override fun If(condition:()->Boolean, block: ViewNode.() -> Unit) {
         if (prepared) {
             error("Cannot add more blocks after prepared.")
         }

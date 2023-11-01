@@ -1,13 +1,13 @@
 package io.github.hooksw.konify.runtime
 
 import io.github.hooksw.konify.runtime.node.ViewNode
-import io.github.hooksw.konify.runtime.state.State
+import io.github.hooksw.konify.runtime.signal.Signal
 
 
 fun <T> ViewNode.For(
-    list: State<List<T>>,
+    list: Signal<List<T>>,
     key:((T)->Any)?=null,
-    child:ViewNode.(State<T>)->Unit
+    child:ViewNode.(Signal<T>)->Unit
 ){
     
 }

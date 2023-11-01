@@ -2,19 +2,19 @@ rootProject.name = "konify"
 
 pluginManagement {
     repositories {
+        mavenCentral()
         maven("https://maven.aliyun.com/repository/public/")
         google()
         gradlePluginPortal()
-        mavenCentral()
     }
 }
 
 dependencyResolutionManagement {
     repositories {
+        mavenCentral()
         maven ("https://maven.aliyun.com/repository/public/")
         maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
         google()
-        mavenCentral()
     }
 }
 

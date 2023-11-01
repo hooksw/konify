@@ -1,0 +1,7 @@
+{
+  "name": "UI",
+  "version": "1.0.0",
+  "dependencies": {
+    "node": "^21.0.0"
+  }
+}
