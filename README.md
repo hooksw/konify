@@ -26,7 +26,7 @@ so we plan to do somethings like:
 the component should code like:
 
 ```kotlin
-@View
+@Component
 fun Counter() {
     var count by signalOf(1)
     val greaterThan10 = memo{count>10}
