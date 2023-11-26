@@ -6,7 +6,7 @@ Konify is a fast, compact, and highly scalable library inspired by [Solid]https:
 
 **It is currently in the design phase.**
 
-#### Differences from Compose
+### Differences from Compose
 
 [Compose]https://developer.android.com/jetpack/composehttps://developer.android.com/jetpack/compose is amazing, but there are still the following problems:
 
@@ -21,7 +21,7 @@ so we plan to do somethings like:
 
 ## Determined parts
 
-#### overview
+### overview
 
 the component should code like:
 
@@ -47,7 +47,7 @@ fun Counter() {
 }
 ```
 
-#### The responsive mechanism behind(pseudo code)
+### The responsive mechanism behind(pseudo code)
 
 ```kotlin
 //Computation代表当所依赖的任一state发生变化时，需要执行的函数（也可以叫做计算，也就是名称的由来）
@@ -136,11 +136,11 @@ fun Button(str:()->String,onClick:()->Unit){
 
 ```
 
-#### State
+### State
 
 like compose there two kinds of State:  `Signal` (like `state` in Compose), `Memo`(like `derivedState` in Compose)
 
-#### Effect
+### Effect
 
 like compose, there are 3 side-effect related functions:
 `SideEffect`,`LaunchEffect`,`DisposeEffect`
@@ -157,9 +157,9 @@ LaunchEffect(Unit){
 }
 ```
 
-#### Control Flow
+### Control Flow
 
-##### Switch
+#### Switch
 
 in Compose, we can do something like:
 
@@ -195,7 +195,7 @@ Switch {
 
 In the code above, when one of stateA,stateB,stateC changes, `Switch`will check the state in order of declaration, the first callback that state value is `true` when will execute.
 
-##### For
+#### For
 
 ```kotlin
 For(list=listState,key={it.id}){item->
@@ -265,7 +265,7 @@ We have had the following ideas:
 There is still debate. If you have any opinions or other options, please contact us.
 And our goal is to keep maintainability, scalability, and high performance.
 
-#### ContextLocal
+### ContextLocal
 
 If you are familiar with Compose, you must know `CompositionLocal`.in Konify ,it's `ContextLocal`.
 Its use is temporarily designed as follows:
@@ -298,7 +298,7 @@ fun B(){
 }
 ```
 
-#### Style
+### Style
 
 We don't use Modifier system,and we use css-like style system.
 
