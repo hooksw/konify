@@ -329,6 +329,19 @@ And it can be extended by extension functions.
 
 **Todo:Do we need to support operations such as `val style=style1+Style{//...}` like inline styles and class styles in CSS?**
 
+## ToDo List
+1. Determine the overall architecture, improve core code and modify the compiler plugin based on it.
+2. Write related tests.
+3. Determine the Style attributes to be implemented, build its platform implementation, and design its DSL.
+4. Design and implement the event system, such as gesture events.
+5. Implement basic UI components:Text, Image, TextInput, FlexLayout, FrameLayout, Buttons
+6. Design and implement the animation system.
+7. Implement advanced UI components:LazyLayout, LazyList, Pager, AsyncImage
+8. (optional) Provide a mechanism to implement custom layout and view.
+9. Design and implement the routing mechanism.
+10. (optional) Design and implement the IDE plugin to enhance the development.
+11. (optional) support hot reload.
+
 ## Supported Platform
 
 We plan to support Android and Web dom first (the author currently cannot afford a mac)
