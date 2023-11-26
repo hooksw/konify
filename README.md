@@ -2,13 +2,13 @@
 
 > The name comes from kotlin, construct, notify
 
-Konify is a fast, compact, and highly scalable library inspired by [Solid]https://www.solidjs.com/https://www.solidjs.com/ and [Compose]https://developer.android.com/jetpack/composehttps://developer.android.com/jetpack/compose for building reactive Android, web and iOS using Kotlin.
+Konify is a fast, compact, and highly scalable library inspired by [Solid] and [Compose] for building reactive Android, web and iOS using Kotlin.
 
 **It is currently in the design phase.**
 
 ### Differences from Compose
 
-[Compose]https://developer.android.com/jetpack/composehttps://developer.android.com/jetpack/compose is amazing, but there are still the following problems:
+[Compose] is amazing, but there are still the following problems:
 
 * there are performance issues in some cases, mostly related to unnecessary recompositions.
 * need to mark stable everywhere.
@@ -262,7 +262,8 @@ We have had the following ideas:
    }
    ```
 
-There is still debate. If you have any opinions or other options, please contact us.
+There is still debate. If you have any opinions or other options, please report here [https://github.com/hooksw/konify/issues/url](https://).
+
 And our goal is to keep maintainability, scalability, and high performance.
 
 ### ContextLocal
