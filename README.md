@@ -2,22 +2,22 @@
 
 > The name comes from kotlin, construct, notify
 
-Konify is a fast, compact, and highly scalable library inspired by [Solid]https://www.solidjs.com/ and [Compose]https://developer.android.com/jetpack/compose for building reactive Android, web and iOS using Kotlin.
+Konify is a fast, compact, and highly scalable library inspired by [Solid] and [Compose] for building reactive Android, web and iOS using Kotlin.
 
 **It is currently in the design phase.**
 
 ### Differences from Compose
 
-[Compose]https://developer.android.com/jetpack/compose is amazing, but there are still the following problems:
+[Compose] is amazing, but there are still the following problems:
 
 * there are performance issues in some cases, mostly related to unnecessary recompositions.
 * need to mark stable everywhere.
 * Compose UI cannot be used in web dom.
 
-so we plan to do somethings like:
+so we plan to do something like:
 
 * writes like Compose, works like native view elements and avoid recompositions.
-* keep scalability so that we can adapt it to other scenes (eg. use skia as behind-the-scenes implementation,or implement other tree-structured responsive systems)
+* keep scalability so that we can adapt it to other scenes (e.g. use skia as behind-the-scenes implementation,or implement other tree-structured responsive systems)
 
 ## Determined parts
 
@@ -47,7 +47,7 @@ fun Counter() {
 }
 ```
 
-### The responsive mechanism behind(pseudo code)
+### The responsive mechanism behind(pseudocode)
 
 ```kotlin
 //Computation代表当所依赖的任一state发生变化时，需要执行的函数（也可以叫做计算，也就是名称的由来）
@@ -142,7 +142,7 @@ like compose there two kinds of State:  `Signal` (like `state` in Compose), `Mem
 
 ### Effect
 
-like compose, there are 3 side-effect related functions:
+like compose, there are 3 side effect related functions:
 `SideEffect`,`LaunchEffect`,`DisposeEffect`
 The main difference from Compose is, when you don't pass any key, it works like pass `Unit/true/...` in Compose
 
