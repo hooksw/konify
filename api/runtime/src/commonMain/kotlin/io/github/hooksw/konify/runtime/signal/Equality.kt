@@ -15,6 +15,9 @@ fun <T> referentialEquality(): Equality<T> {
 fun <T> nonEqualEquality(): Equality<T> {
     return NonEqualEquality
 }
+fun  arrayEquality(): Equality<Array<*>> {
+    return NonEqualEquality
+}
 
 // -------- Internal --------
 
@@ -33,5 +36,11 @@ private object ReferentialEquality : Equality<Any?> {
 private object NonEqualEquality : Equality<Any?> {
     override fun compare(old: Any?, new: Any?): Boolean {
         return false
+    }
+}
+
+private object ArrayEquality : Equality<Array<*>> {
+    override fun compare(old: Array<*>?, new: Array<*>?): Boolean {
+        return old.contentEquals(new)
     }
 }

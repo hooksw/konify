@@ -1,6 +1,6 @@
 package io.github.hooksw.konify.compiler.fir
 
-import io.github.hooksw.konify.compiler.conf.KonifyAnnotations
+import io.github.hooksw.konify.compiler.conf.Annotations
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirElement
@@ -88,9 +88,9 @@ private fun checkKonifyCall(
                 return
         },
         visitFunction = { function ->
-            if (function.hasAnnotation(KonifyAnnotations.Component,context.session)) {
+            if (function.hasAnnotation(Annotations.Component,context.session)) {
                 if (
-                    function.hasAnnotation(KonifyAnnotations.ReadOnly,context.session) &&
+                    function.hasAnnotation(Annotations.ReadOnly,context.session) &&
                     !calleeFunction.isReadOnlyKonify(context.session)
                 ) {
                     reporter.reportOn(

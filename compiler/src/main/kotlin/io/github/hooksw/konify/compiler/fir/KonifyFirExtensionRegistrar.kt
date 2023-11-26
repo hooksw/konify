@@ -1,11 +1,11 @@
 package io.github.hooksw.konify.compiler.fir
 
-import io.github.hooksw.konify.compiler.conf.KonifyAnnotations
+import io.github.hooksw.konify.compiler.conf.Annotations
+import io.github.hooksw.konify.compiler.conf.rootPackage
 import org.jetbrains.kotlin.builtins.functions.FunctionTypeKind
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.DeclarationCheckers
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
-import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirPropertyChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.ExpressionCheckers
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirCallableReferenceAccessChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirFunctionCallChecker
@@ -32,9 +32,9 @@ class KonifyFunctionTypeKindExtension(
 }
 
 object KonifyFunction : FunctionTypeKind(
-    FqName.topLevel(Name.identifier("io.github.hooksw.konify")),
+    FqName.topLevel(Name.identifier(rootPackage)),
     "KonifyFunction",
-    KonifyAnnotations.Component,
+    Annotations.Component,
     isReflectType = false
 ) {
     override val prefixForTypeRender: String
@@ -44,9 +44,9 @@ object KonifyFunction : FunctionTypeKind(
 }
 
 object KKonifyFunction : FunctionTypeKind(
-    FqName.topLevel(Name.identifier("io.github.hooksw.konify")),
+    FqName.topLevel(Name.identifier(rootPackage)),
     "KKonifyFunction",
-    KonifyAnnotations.Component,
+    Annotations.Component,
     isReflectType = true
 ) {
     override fun nonReflectKind(): FunctionTypeKind = KonifyFunction
@@ -56,9 +56,6 @@ class KonifyFirCheckersExtension(session: FirSession) : FirAdditionalCheckersExt
     override val declarationCheckers: DeclarationCheckers = object : DeclarationCheckers() {
         override val functionCheckers: Set<FirFunctionChecker> =
             setOf(KonifyFunctionChecker)
-
-        override val propertyCheckers: Set<FirPropertyChecker> =
-            setOf(KonifyPropertyChecker)
     }
 
     override val expressionCheckers: ExpressionCheckers = object : ExpressionCheckers() {

@@ -1,101 +1,89 @@
 package io.github.hooksw.konify.runtime
 
-import io.github.hooksw.konify.runtime.node.InternalViewNode
-import io.github.hooksw.konify.runtime.node.ViewNode
+import io.github.hooksw.konify.runtime.annotation.Component
+import io.github.hooksw.konify.runtime.annotation.ReadOnly
+import io.github.hooksw.konify.runtime.internal.toOriginal
 import io.github.hooksw.konify.runtime.signal.*
-import io.github.hooksw.konify.runtime.signal.DerivedSignal
+import io.github.hooksw.konify.runtime.utils.fastForEach
 import io.github.hooksw.konify.runtime.utils.fastForEachIndex
 
-sealed interface SwitchScope {
+interface SwitchScope {
+    @ReadOnly
+    @Component
     fun If(
-        condition: ()->Boolean,
-        block: ViewNode. () -> Unit
+        condition: Boolean,
+        block:@Component () -> Unit
     )
 
-    fun Else(block: ViewNode. () -> Unit)
+    @ReadOnly
+    @Component
+    fun Else(block:@Component () -> Unit)
 }
 
-inline fun ViewNode.Switch(crossinline function: SwitchScope.() -> Unit) {
+@Component
+fun Switch(function: SwitchScope.() -> Unit) {
     val scope = SwitchScopeImpl()
     scope.function()
-    scope.prepare()
+    val node= CurrentNode!!
+    createComputation {
+        node.childNodes?.fastForEach {
+            it.cleanup()
+        }
+        node.childNodes?.clear()
+        scope.notifyChange()
+    }.run()
+    node.addOnDispose {
+        scope.clear()
+    }
 }
 
 // -------- Internal --------
 
 @PublishedApi
 internal class SwitchScopeImpl() : SwitchScope {
-    private var prepared: Boolean = false
 
-    private val ifConditions: MutableList<()->Boolean> = ArrayList(2)
+    private val ifConditions: MutableList<() -> Boolean> = ArrayList(2)
 
-    private val ifBlocks: MutableList<ViewNode. () -> Unit> = ArrayList(2)
+    private val ifBlocks: MutableList<() -> Unit> = ArrayList(2)
 
-    private var elseBlock: (ViewNode.() -> Unit)? = null
+    private var elseBlock: (() -> Unit)? = null
+    private var lastCondition: (() -> Boolean)? = null
 
-    private var lastCondition: (()->Boolean)? = null
-
-    private lateinit var cacheNodes: Array<ViewNode?>
-
-    fun prepare() {
-        val owner= Owners.last()
-        (derived(nonEqualEquality()) {
-            notifyChange(owner)
-        } as DerivedSignal<Unit>).getValue()
-        cacheNodes = arrayOfNulls(ifConditions.size + 1)
-        prepared = true
-    }
-
-    private fun notifyChange(owner: Owner) {
-        val switchNode = owner as InternalViewNode
-        val lastCondition = lastCondition
-        var matchInCondition = false
-        ifConditions.fastForEachIndex { index, condition ->
-            if (condition()) {
-                if (condition != lastCondition) {
-                    val child=switchNode.detachNodeAt(0)
-                    this.lastCondition = condition
-                    val currentConditionIndex = ifConditions.indexOf(condition)
-                    val cacheNode = cacheNodes[index]
-                    if (cacheNode == null) {
-                        switchNode.(ifBlocks[currentConditionIndex])()
-                        cacheNodes[index] = child
-                    } else {
-                        switchNode.insertNode(cacheNode, 0)
-                    }
-                } else {
+    fun notifyChange() {
+        var block: (() -> Unit)? = null
+        ifConditions.fastForEachIndex { index, item ->
+            val r = item()
+            if (r) {
+                if (lastCondition == item) {
                     return
                 }
-                matchInCondition = true
+                block = ifBlocks[index]
+                return@fastForEachIndex
             }
         }
-        if (matchInCondition) return
-        val elseBlock = elseBlock
-        this.lastCondition = null
-        if (elseBlock != null) {
-            val child = switchNode.detachNodeAt(0)
-            val elseNodes = cacheNodes.last()
-            if (elseNodes == null) {
-                switchNode.elseBlock()
-                cacheNodes[cacheNodes.size - 1] = child
-            } else {
-                switchNode.insertNode(elseNodes, 0)
-            }
+        if (block == null && elseBlock != null) {
+            block = elseBlock
         }
+        block?.invoke()
     }
 
-    override fun If(condition:()->Boolean, block: ViewNode.() -> Unit) {
-        if (prepared) {
-            error("Cannot add more blocks after prepared.")
+    fun clear() {
+        ifConditions.clear()
+        ifBlocks.clear()
+        elseBlock = null
+        lastCondition = null
+    }
+
+
+    override fun If(condition: Boolean, block: () -> Unit) {
+        if (elseBlock != null) {
+            error("Illegal order.")
         }
-        ifConditions.add(condition)
+        ifConditions.add(toOriginal(condition))
         ifBlocks.add(block)
     }
 
-    override fun Else(block: ViewNode. () -> Unit) {
-        if (prepared) {
-            error("Cannot add more blocks after prepared.")
-        }
+    override fun Else(block: () -> Unit) {
         if (ifBlocks.isEmpty()) {
             error("If should be before Else.")
         }

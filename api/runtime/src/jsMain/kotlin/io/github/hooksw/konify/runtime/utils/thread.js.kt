@@ -1,6 +1,6 @@
 package io.github.hooksw.konify.runtime.utils
 
-actual fun isMainThread(): Boolean {
+actual fun isThreadSafe(): Boolean {
     return true
 }
 

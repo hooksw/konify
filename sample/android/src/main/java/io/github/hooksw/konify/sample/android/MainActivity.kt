@@ -2,21 +2,21 @@ package io.github.hooksw.konify.sample.android
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import io.github.hooksw.konify.common.component.text.Text
+import io.github.hooksw.konify.ui.component.text.Text
 import io.github.hooksw.konify.runtime.LaunchedEffect
 import io.github.hooksw.konify.runtime.Switch
-import io.github.hooksw.konify.runtime.platform.setContent
+import io.github.hooksw.konify.ui.platform.setContent
 import io.github.hooksw.konify.runtime.signal.signalOf
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val showA = signalOf(false)
-            val showB = signalOf(false)
+            var showA by signalOf(false)
+            var showB by signalOf(false)
             LaunchedEffect {
-                showA.value=true
-                showB.value=true
+                showA=true
+                showB=true
             }
             Switch {
                 If(showA) {

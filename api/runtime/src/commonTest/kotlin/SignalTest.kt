@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 
 class SignalTest {
     private val fakeOwner= object : Owner {
-        override val stateDisposerMap: MutableScatterMap<StateObserver, UnitCallBack>
+        override val sources: MutableScatterMap<StateObserver, UnitCallBack>
             = MutableScatterMap()
     }
     @Test
@@ -16,9 +16,9 @@ class SignalTest {
         val b by a
         Owners.add(fakeOwner)
         signalConsume {
-            assertTrue { Listeners.isNotEmpty() }
+            assertTrue { CurrentListener?.isNotEmpty() }
             println(b)
-            assertTrue { fakeOwner.stateDisposerMap.isNotEmpty() }
+            assertTrue { fakeOwner.sources.isNotEmpty() }
         }
         assertEquals((a as ObservedSignal).observers.size, 1)
         val o=Owners.removeLast()

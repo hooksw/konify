@@ -1,10 +1,5 @@
 package io.github.hooksw.konify.runtime.signal
 
-import androidx.collection.MutableScatterMap
-import androidx.collection.MutableScatterSet
-import androidx.collection.mutableScatterSetOf
-import io.github.hooksw.konify.runtime.utils.UnitCallBack
-import kotlin.jvm.JvmField
 import kotlin.reflect.KProperty
 
 sealed interface SignalMarker

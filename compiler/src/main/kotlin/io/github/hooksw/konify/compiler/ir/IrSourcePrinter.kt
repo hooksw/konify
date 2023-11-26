@@ -16,7 +16,7 @@
 
 package io.github.hooksw.konify.compiler.ir
 
-import io.github.hooksw.konify.compiler.conf.KonifyAnnotations
+import io.github.hooksw.konify.compiler.conf.Annotations
 import org.jetbrains.kotlin.com.intellij.openapi.progress.ProcessCanceledException
 import java.util.Locale
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
@@ -113,7 +113,7 @@ fun IrElement.dumpSrc(useFir: Boolean = false): String {
         .replace(Regex("}\\n(\\s)*,", RegexOption.MULTILINE), "},")
 }
 
-class Scope(
+private class Scope(
     val owner: IrFunction? = null,
     val localValues: HashSet<IrValueDeclaration> = hashSetOf()
 )
@@ -441,7 +441,7 @@ class IrSourcePrinterVisitor(
 
         val prop = (function as? IrSimpleFunction)?.correspondingPropertySymbol?.owner
 
-        if (prop != null && !function.hasAnnotation(KonifyAnnotations.Component.asSingleFqName())) {
+        if (prop != null && !function.hasAnnotation(Annotations.Component.asSingleFqName())) {
             val propName = prop.name.asString()
             print(propName)
             if (function == prop.setter) {
@@ -1499,7 +1499,7 @@ class IrSourcePrinterVisitor(
             if (parent is IrDeclaration) {
                 parent.renderDeclarationFqn(sb)
             } else if (parent is IrPackageFragment) {
-                sb.append(parent.fqName.toString())
+                sb.append(parent.packageFqName.toString())
             }
         } catch (e: UninitializedPropertyAccessException) {
             sb.append("<uninitialized parent>")

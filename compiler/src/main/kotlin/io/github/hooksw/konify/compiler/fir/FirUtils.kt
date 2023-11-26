@@ -1,6 +1,6 @@
 package io.github.hooksw.konify.compiler.fir
 
-import io.github.hooksw.konify.compiler.conf.KonifyAnnotations
+import io.github.hooksw.konify.compiler.conf.Annotations
 import org.jetbrains.kotlin.fir.FirAnnotationContainer
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
@@ -34,19 +34,19 @@ fun FirBasedSymbol<*>.hasAnnotation(classId: ClassId, session: FirSession): Bool
 fun FirCallableSymbol<*>.isKonify(session: FirSession): Boolean =
     when (this) {
         is FirFunctionSymbol<*> ->
-            hasAnnotation(KonifyAnnotations.Component,session)
+            hasAnnotation(Annotations.Component,session)
         is FirPropertySymbol ->
             getterSymbol?.let {
-                it.hasAnnotation(KonifyAnnotations.Component,session) || it.isKonifyDelegate(session)
+                it.hasAnnotation(Annotations.Component,session) || it.isKonifyDelegate(session)
             } ?: false
         else -> false
     }
 
 fun FirBasedSymbol<*>.hasReadOnlyComposableAnnotation(session: FirSession): Boolean =
-    hasAnnotation(KonifyAnnotations.ReadOnly, session)
+    hasAnnotation(Annotations.ReadOnly, session)
 
 fun FirAnnotationContainer.hasDisallowComposableCallsAnnotation(session: FirSession): Boolean =
-    hasAnnotation(KonifyAnnotations.DisallowKonifyCalls, session)
+    hasAnnotation(Annotations.DisallowKonifyCalls, session)
 
 fun FirCallableSymbol<*>.isReadOnlyKonify(session: FirSession): Boolean =
     when (this) {
@@ -58,7 +58,7 @@ fun FirCallableSymbol<*>.isReadOnlyKonify(session: FirSession): Boolean =
     }
 
 fun FirAnnotationContainer.hasDisallowKonifyCallsAnnotation(session: FirSession): Boolean =
-    hasAnnotation(KonifyAnnotations.DisallowKonifyCalls, session)
+    hasAnnotation(Annotations.DisallowKonifyCalls, session)
 @OptIn(SymbolInternals::class)
 private fun FirPropertyAccessorSymbol.isKonifyDelegate(session: FirSession): Boolean {
     if (!propertySymbol.hasDelegate) return false

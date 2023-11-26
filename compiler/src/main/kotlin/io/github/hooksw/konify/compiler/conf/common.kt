@@ -5,6 +5,8 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 
+const val rootPackage="io.github.hooksw.konify"
+
 const val packageName="io.github.hooksw.konify.runtime"
 
 fun classIdFor(pname:String,cname:String)=

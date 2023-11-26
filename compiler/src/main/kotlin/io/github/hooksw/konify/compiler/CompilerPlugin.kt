@@ -11,16 +11,13 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
 
 @OptIn(ExperimentalCompilerApi::class)
-public class RedactedComponentRegistrar : CompilerPluginRegistrar() {
+public class KonifyComponentRegistrar : CompilerPluginRegistrar() {
 
     override val supportsK2: Boolean
         get() = true
 
     override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         if (configuration[KEY_ENABLED] == false) return
-
-        val messageCollector =
-            configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
 
         IrGenerationExtension.registerExtension(
             KonifyIrGenerationExtension()

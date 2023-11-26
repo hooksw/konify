@@ -1,27 +1,23 @@
 package io.github.hooksw.konify.runtime.signal
 
-import androidx.collection.MutableScatterSet
-import androidx.collection.mutableScatterSetOf
-import io.github.hooksw.konify.runtime.utils.UnitCallBack
+import io.github.hooksw.konify.runtime.utils.assertOnMainThread
+import io.github.hooksw.konify.runtime.utils.fastForEach
 
 internal class ObservedSignal<T>(
     initialValue: T,
     private val equality: Equality<T> = structuralEquality()
-) : MutableSignal<T>,StateObserver {
+) : MutableSignal<T>, StateObserver {
 
-    override val observers: MutableScatterSet<UnitCallBack> = mutableScatterSetOf()
+    override val observers: MutableList<Computation> = mutableListOf()
 
     override var value: T = initialValue
         get() {
-            val owner = Owners.lastOrNull()
-            val listener = Listeners.lastOrNull()
-            if (owner != null && listener != null) {
-                observers.add(listener)
-                owner.stateDisposerMap[this]=listener
-            }
+            assertOnMainThread()
+            autoTrack()
             return field
         }
         set(value) {
+            assertOnMainThread()
             if (equality.compare(field, value)) {
                 return
             }
@@ -30,7 +26,7 @@ internal class ObservedSignal<T>(
         }
 
     private fun dispatchUpdate() {
-        observers.forEach {
+        observers.fastForEach {
             pushUpdate(it)
         }
     }

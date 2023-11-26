@@ -1,13 +1,13 @@
 package io.github.hooksw.konify.compiler.fir
 
-import io.github.hooksw.konify.compiler.conf.KonifyAnnotations
+import io.github.hooksw.konify.compiler.conf.Annotations
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirFunctionChecker
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.declarations.FirFunction
-import org.jetbrains.kotlin.fir.declarations.getSingleCompatibleExpectForActualOrNull
+import org.jetbrains.kotlin.fir.declarations.getSingleExpectForActualOrNull
 import org.jetbrains.kotlin.fir.declarations.utils.isAbstract
 import org.jetbrains.kotlin.fir.declarations.utils.isOperator
 import org.jetbrains.kotlin.fir.declarations.utils.isSuspend
@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.util.OperatorNameConventions
 
 object KonifyFunctionChecker : FirFunctionChecker() {
     override fun check(declaration: FirFunction, context: CheckerContext, reporter: DiagnosticReporter) {
-        val isKonify = declaration.hasAnnotation(KonifyAnnotations.Component,context.session)
+        val isKonify = declaration.hasAnnotation(Annotations.Component,context.session)
 
         // Check overrides for mismatched Konify annotations
         for (override in declaration.getDirectOverriddenFunctions(context)) {
@@ -33,8 +33,8 @@ object KonifyFunctionChecker : FirFunctionChecker() {
         }
 
         // Check that `actual` Konify declarations have Konify expects
-        declaration.symbol.getSingleCompatibleExpectForActualOrNull()?.let { expectDeclaration ->
-            if (expectDeclaration.hasAnnotation(KonifyAnnotations.Component,context.session) != isKonify) {
+        declaration.symbol.getSingleExpectForActualOrNull()?.let { expectDeclaration ->
+            if (expectDeclaration.hasAnnotation(Annotations.Component,context.session) != isKonify) {
                 reporter.reportOn(
                     declaration.source,
                     KonifyErrors.MISMATCHED_Konify_IN_EXPECT_ACTUAL,

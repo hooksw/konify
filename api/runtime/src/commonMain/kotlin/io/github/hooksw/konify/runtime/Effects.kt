@@ -1,16 +1,18 @@
 package io.github.hooksw.konify.runtime
 
-import io.github.hooksw.konify.runtime.node.ViewNode
-import io.github.hooksw.konify.runtime.signal.*
-import io.github.hooksw.konify.runtime.signal.Owners
-import io.github.hooksw.konify.runtime.utils.fastForEach
+import io.github.hooksw.konify.runtime.annotation.Component
+import io.github.hooksw.konify.runtime.annotation.ReadOnly
+import io.github.hooksw.konify.runtime.signal.Nodes
+import io.github.hooksw.konify.runtime.signal.createComputation
+import io.github.hooksw.konify.runtime.signal.untrack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-
-fun ViewNode.SideEffect(
+@Component
+@ReadOnly
+fun SideEffect(
     vararg keys: Any,
     effect: () -> Unit
 ) {
@@ -21,8 +23,10 @@ fun ViewNode.SideEffect(
     )
 }
 
-fun ViewNode.DisposableEffect(
-    vararg keys:Any,
+@Component
+@ReadOnly
+fun DisposableEffect(
+    vararg keys: Any,
     effect: () -> DisposeHandle
 ) {
     var handle: DisposeHandle? = null
@@ -39,7 +43,9 @@ fun ViewNode.DisposableEffect(
 }
 
 
-fun ViewNode.LaunchedEffect(
+@Component
+@ReadOnly
+fun LaunchedEffect(
     vararg keys: Any,
     effect: suspend CoroutineScope.() -> Unit
 ) {
@@ -55,22 +61,20 @@ fun ViewNode.LaunchedEffect(
         }
     )
 }
-//as we don't need auto track here,so not use signalConsume
-private fun ViewNode.effectCommon(
+
+private fun effectCommon(
     keys: Array<out Any>,
-     block: () -> Unit,
-     onDispose: () -> Unit
+    block: () -> Unit,
+    onDispose: () -> Unit
 ) {
-    val owner= Owners.last()
-    registerPrepared(block)
-    keys.fastForEach {
-        if(it is StateObserver){
-            it.observers.add(block)
-            if(it is Owner){
-                it.stateDisposerMap[it]=onDispose
-            }else{
-                owner.stateDisposerMap[it]=onDispose
-            }
+    val node = Node
+    node?.addOnMount(block)
+    node?.addOnDispose(onDispose)
+    val keys = keys as Array<() -> Any>
+    createComputation {
+        keys.forEach { it() }
+        untrack {
+            block()
         }
     }
 }

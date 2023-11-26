@@ -1,13 +1,13 @@
 plugins {
     kotlin("multiplatform")
-
+    kotlin("plugin.serialization") version "2.0.0-Beta1"
     id("com.android.library")
 }
 
 subprojects {
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
-
+        plugin("org.jetbrains.kotlin.plugin.serialization")
         plugin("com.android.library")
     }
 }
@@ -49,6 +49,7 @@ allprojects {
         sourceSets {
             getByName("commonMain") {
                 dependencies {
+                    implementation( "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
                     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
                     implementation("androidx.collection:collection:1.4.0-alpha02")
                 }

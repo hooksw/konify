@@ -3,7 +3,7 @@ package io.github.hooksw.konify.runtime.utils
 import android.os.Handler
 import android.os.Looper
 
-actual fun isMainThread(): Boolean {
+actual fun isThreadSafe(): Boolean {
     return Looper.getMainLooper().isCurrentThread
 }
 

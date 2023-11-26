@@ -1,26 +1,25 @@
 # Konify
 
-Konify is a library inspired by [Solid] and [Compose] for building reactive Android, iOS, and web
-UIs using Kotlin.
+> The name comes from kotlin, construct, notify
 
-**Konify is  not ready for production.**
+Konify is a fast, compact, and highly scalable library inspired by [Solid] and [Compose] for building reactive Android, web and iOS using Kotlin.
 
-### Differences from Compose
+**It is currently in the design phase.**
+
+#### Differences from Compose
 
 [Compose] is amazing, but there are still the following problems:
 
-* there are performance issues in some cases, mostly related to some unnecessary recomposition.
-* Compose UI cannot be used in web dom, and kotlin/wasm is new and experimental which not ready for
-  production.
+* there are performance issues in some cases, mostly related to unnecessary recompositions.
+* need to mark stable everywhere.
+* Compose UI cannot be used in web dom.
 
 so we plan to do somethings like:
 
-* builds the UI tree at once, no need to diff with different ui states.
-* wraps native UI element, just like what react native do to avoid implement the complicated render
-  part and keeps UI native.
-* writes like Compose to simplify development
+* writes like Compose, works like native view elements and avoid recompositions.
+* keep scalability so that we can adapt it to other scenes (such as rendering engines like Skia)
 
-### Documentation
+## Determined parts
 
 #### overview
 
@@ -29,77 +28,141 @@ the component should code like:
 ```kotlin
 @View
 fun Counter() {
-    val count = mutableStateOf(1)
-    val greaterThan10 = count.map { it > 10 }
+    var count by signalOf(1)
+    val greaterThan10 = memo{count>10}
     LaunchEffect(greaterThan10) {
-        print("greaterThan10:${greaterThan10.value}")
+        print("the count is greater than 10")
     }
     Row {
-        Icon()
         Text(count)
         Switch {
             If(greaterThan10) {
-                Button(text = stateOf("Reset"), onClick = { count.value = 0 })
+                Button(text = "Reset", onClick = { count = 0 })
             }
             Else {
-                Button(text = stateOf("+"), onClick = { count.value += 1 })
+                Button(text = "+", onClick = { count += 1 })
             }
         }
     }
 }
 ```
 
-#### How it works?
+#### The responsive mechanism behind(pseudo code)
 
 ```kotlin
-@View
-fun B() {
+//Computation代表当所依赖的任一state发生变化时，需要执行的函数（也可以叫做计算，也就是名称的由来）
+class Computation(
+   private val fn:()->Unit
+){
+    val listener={
+        //每次执行Computation前先解绑所有的signal，以防止重复添加
+        //至于为什么不用Set数据结构，因为这样可以实现自动追踪
+        //比如一个computation的回调是textView.text=if(boolSignal) signal1 else signal2，
+        //当boolSignal为true时，由于条件分支执行，只有boolSignal和signal1会和这个computation进行绑定
+        //当boolSignal变为false，先解绑再重新绑定后,signal1不会再追踪这个computation，而是boolSignal和signal2会追踪它
+        signals.forEach{
+            it.observers.remove(this)
+        }
+        //12. 重新绑定，注意此时fn为textView.text=str()，因此会在设置好currentComputation时重新调用signal.getValue
+        withComputation(this,fn)
+    }
+    val signals:MutableList<Signal> =mutableListOf()
 }
 
-@View
-fun A(params: State<Int>) {
-    B()
+class Signal(private var backValue:Any){
+    var value:Any
+        get(){
+            //9.此时computation为null，直接获取值
+            if(currentComputation!=null){
+                //6.此时进行双绑
+                //13.重新绑定，以便下次signal变化的时候再次调用绑定的computation
+                currentComputation.states.add(this)
+                observers.add(currentComputation)
+            }
+            return backValue
+        }
+        set(value){
+            backValue=value
+            //11.遍历执行computation
+            observers.forEach{
+                it.listener()
+            }
+        }
+    val observers:MutableList<Computation> =mutableListOf()
+}
+var currentComputation:Computation?=null
+
+//2.进入bind内部
+fun bind(block:()->Unit){
+    withComputation(Computation(block),block)
 }
 
-//will be transformed to
-fun A(params: State<Int>, $node: ViewNode) {
-    val $cnode = $node.createChild()
-    B($cnode)
-    $node.prepare()
+fun withComputation(computation: Computation, run: () -> Unit){
+    //保存当前Computation，在没有memo（compose中的derivedState）的情况下，它一般为空
+    val lasComputation=currentComputation
+    //3. 设置当前Computation，准备进行双绑
+    currentComputation=computation
+    //4. 执行第一次绑定
+     run()
+    //恢复值，当前示例下，恒为null
+    currentComputation=lasComputation
 }
+
+//使用示例
+fun counter(){
+    val count = Signal(0)
+    Button(()->count.value.toString()){
+        //10.调用signal.getValue
+        count.value=
+        //8. 进入signal.getValue
+            count.value+1
+    }
+}
+//为了实现响应式，我们必须通过编译器插件把除了lambda类型以外的类型转为lazy获取的形式，以便signal.value能准确获取到computation并和其进行互相绑定
+fun Button(str:()->String,onClick:()->Unit){
+    val textView=TextView()
+    //7.绑定完成后当调用onClick，也就是更改count.value时
+    textView.onClick=onClick
+    //1. 此时进入bind实现state和computation的双向绑定，而不是传统的以便signal.bind{}的单向绑定
+    bind{
+        //5. 在回调中通过()->T的形式能够在此时获取到对以便signal.value，也就是count.value，并开始和其绑定，然后执行一次回调
+        textView.text=str()
+    }
+}
+
+//ViewModel：
+//在脱离computation的单线程场景中，computation恒为null,因此此时signal.getValue没有响应式特性
+//因此在viewModel中使用flow替代是最好的
+
 ```
-`ViewNode` is a wrapper for native UI elements(in Android, it wraps `View`, in Web,it wraps `HtmlElement`)  
-You can see a annotated function as a ViewNode tree builder.
 
 #### State
 
-As we only build the UI once, there's no recomposition.  
-So we have to declare all state that may change with `State<XXX>`,including state and function parameter.
-`mutableStateOf` create a mutable State.  
-`stateOf` create a state that is readonly, it just is used to match the State type.  
+like compose there two kinds of State:  `Signal` (like `state` in Compose), `Memo`(like `derivedState` in Compose)
 
 #### Effect
-we provide 2 functions to manage effects.  
-`LaunchEffect` receive a list of states(can be empty) and a suspend callback, when one of the states changes, the callback is invoked and previous job will be cancel.
+
+like compose, there are 3 side-effect related functions:
+`SideEffect`,`LaunchEffect`,`DisposeEffect`
+The main difference from Compose is, when you don't pass any key, it works like pass `Unit/true/...` in Compose
+
 ```kotlin
-LaunchEffect(state){ 
-  delay(2000)
-  print(state.value.toString())
+//in konify
+LaunchEffect{
+  //todo
 }
-```
-`DisposableEffect` receive a list of states(can be empty) and a onClean callback, when one of the states changes, the callback is invoked and previous cleanUp callback will be called
-```kotlin
-DisposableEffect(state){
-  register()
-  onDispose{
-    unregister()
-  }
+//like in compose
+LaunchEffect(Unit){
+  //todo
 }
 ```
 
 #### Control Flow
 
+##### Switch
+
 in Compose, we can do something like:
+
 ```kotlin
 @Compose
 fun A(bool:Boolean){
@@ -111,7 +174,8 @@ fun A(bool:Boolean){
 }
 ```
 
-since Konify only invoke there functions once, we cannot simply use kotlin control flow keywords, but we can use `If` and `Else` function inside `Switch` block:
+since Konify only invoke these functions once, we cannot simply use kotlin control flow keywords, but we can use `If` and `Else` function inside `Switch` block:
+
 ```kotlin
 Switch {
   If(stateA) {
@@ -128,86 +192,146 @@ Switch {
   }
 }
 ```
-`If` receive a State<Boolean> state and a` @View ()->Unit ` callback.  
-In the code above, when one of stateA,stateB,stateC changes, `Switch` will check the state in order of declaration, the first callback that state value is `true when will execute.
 
-### For
+In the code above, when one of stateA,stateB,stateC changes, `Switch`will check the state in order of declaration, the first callback that state value is `true` when will execute.
+
+##### For
+
 ```kotlin
-For(list=State<List<*>>,key={it.id}){item->
+For(list=listState,key={it.id}){item->
     Text(text=item.toString())
 }
 ```
-#### ViewLocal
-If you are familiar with Compose, you must know `CompositionLocal`.in Konify ,it's `ViewLocal`.  
-The main difference of usage is that the value of ViewLocal should be a State type, even if it won't be changed, it's a design compromise.  
-You can use it like:
+
+## Undetermined Part
+
+#### The Node System
+
+**This part is very important, as it involves a lot of parts: basic architecture,the UI node tree, expandability, debug information, and more.**
+
+We have had the following ideas:
+
+1. **Use global variables to manage the current Node(like what SolidJS do)**
+
+   ```kotlin
+   internal var currentNode:Node?=null
+   fun ComponnetA(){
+     val parent=currentNode!!
+     currentNode=createNode(parent)
+     //function body
+     LaunchEffect{
+       //...
+     }
+     //restore
+     currentNode=parent
+   }
+   fun LaunchEffect(block:()->Unit){
+     val node=currentNode!!
+     node.registerOnPrepare{//...}
+     node.registerOnDispose{//...}
+   }
+   ```
+2. **Inject the Node parameter**
+
+   ```kotlin
+   fun ComponnetA(node:Node){
+     val currentNode=createNode(node)
+     //function body
+     LaunchEffect(currentNode){
+       //...
+     }
+   }
+   fun LaunchEffect(node:Node,block:()->Unit){
+     node.registerOnPrepare{//...}
+     node.registerOnDispose{//...}
+   }
+   ```
+3. **Inject the NodeTree parameter(like what Compose do)**
+
+   ```kotlin
+   fun ComponnetA(tree:NodeTree){
+     val currentNode=tree.createNode()
+     //function body
+     LaunchEffect(currentNode){
+       //...
+     }
+   }
+   fun LaunchEffect(node:Node,block:()->Unit){
+     node.registerOnPrepare{//...}
+     node.registerOnDispose{//...}
+   }
+   ```
+
+There is still debate. If you have any opinions or other options, please contact us.
+And our goal is to keep maintainability, scalability, and high performance.
+
+#### ContextLocal
+
+If you are familiar with Compose, you must know `CompositionLocal`.in Konify ,it's `ContextLocal`.
+Its use is temporarily designed as follows:
+
 ```kotlin
-val LocalCount = ViewLocalOf(1)
+val ContextLocalCount = ContextLocalOf(1)
 
 @View
 fun A() {
-  val counter = mutableStateOf(0)
+  var counter bv signalOf(0)
   LaunchEffect{
       while (true){
+          delay(1000)
           counter.value+=1
       }
   }
-  ViewLocalProvider(LocalCount provides counter){
+  ContextLocalProvider(ContextLocalCount provides counter){
       B()
-  }
-  ViewLocalProvider(LocalCount provides 3){
-      C()
   }
 }
 
 @View
 fun B(){
-  //get a mutableState whose init value is 0 
-  val countState:State<Int> = LocalCount.current
-  
-}
-@View
-fun C(){
-  //get a state whose value is 3 and will never be changed
-  val countState:State<Int> = LocalCount.current
-  
-}
-```
-#### How to Wrap Native View
-
-first we declare an expect function, for example,Text()
-```kotlin
-expect fun Text(text:State<String>)
-```
-then we can implement in different platform:
-```kotlin
-//Android
-
-@View
-actual fun Text(
-  text: State<String>
-) {
-  val textView = createTextView(
-    text = text.value
-  )
-  registerPlatformView(textView)
-  text.observe{
-      textView.text=it
+  val localCount by useContext(ContextLocalCount)
+  //get a signal whose init value is 0 
+  val countState by signalOf(localCount)
+  LaunchEffect(localCount){
+     print(localCount.toString())
   }
 }
 ```
 
-#### Modifier
-We haven't decide how to design the Modifier system.
+#### Style
 
-### Supported Platform
-We plan to support Android and Web dom first.
+We don't use Modifier system,and we use css-like style system.
 
-### About IOS?
-The author doesn't have a job and is too poor to buy a Mac, if you are interested in this project, welcome to contribute.
+The current design is as follows
+
+```kotlin
+fun Style(callback:StyleNode.()->Unit){
+  //...
+}
+fun Sample(){
+  Text(
+    style=Style{
+      width=100.dp
+      height=50.dp
+      border[Left,Right]{
+         color=Color.Red
+      }
+    }
+    ,"text"
+  )
+}
+```
+
+The callback block in the `Style` function only supports value assignment and function calls
+
+And it can be extended by extension functions.
+
+**Todo:Do we need to support operations such as `val style=style1+Style{//todo}` like inline styles and class styles in CSS?**
+
+## Supported Platform
+
+We plan to support Android and Web dom first (the author currently cannot afford a mac)
 
 [compose]: https://developer.android.com/jetpack/compose
-
 [kmm]: https://kotlinlang.org/lp/mobile/
-
 [Solid]: https://www.solidjs.com/

@@ -25,6 +25,9 @@ import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.declarations.IrFile
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.ir.declarations.name
+import org.jetbrains.kotlin.ir.expressions.*
+import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
+import org.jetbrains.kotlin.ir.util.isLambda
 import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
@@ -71,3 +74,17 @@ class IrValidator(val irBuiltIns: IrBuiltIns, val config: IrValidatorConfig) :
         element.acceptChildrenVoid(this)
     }
 }
+private val IrStatementOrigin?.isLambdaBlockOrigin: Boolean
+    get() = isLambda || this == IrStatementOrigin.ADAPTED_FUNCTION_REFERENCE ||
+            this == IrStatementOrigin.SUSPEND_CONVERSION
+fun IrExpression.unwrapLambda(): IrFunctionSymbol? = when {
+    this is IrBlock && origin.isLambdaBlockOrigin ->
+        (statements.lastOrNull() as? IrFunctionReference)?.symbol
+
+    this is IrFunctionExpression ->
+        function.symbol
+
+    else ->
+        null
+}
+
