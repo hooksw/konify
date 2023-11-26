@@ -207,7 +207,7 @@ For(list=listState,key={it.id}){item->
 
 ### The Node System
 
-This part is very important, as it involves a lot of parts: basic architecture,the UI node tree, expandability, debug information, and more.
+This part is very important, as it involves a lot of parts: basic architecture, the UI node tree, expandability, debug information, and more.
 
 We have had the following ideas:
 
