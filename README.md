@@ -25,7 +25,7 @@ Therefore, we plan to achieve the following goals:
 * Written like Compose, works like Native elements, no need to recompose.
 * Keep it extensible so that we can adapt it to other scenarios (e.g. using Skia as a backend implementation, or implementing other tree-structured reactive systems).
 
----
+
 
 ## Determined part
 
@@ -207,7 +207,7 @@ For(list=listState,key={it.id}){item->
    Text(text=item.toString())
 }
 ```
----
+
 
 ## Undetermined part
 
