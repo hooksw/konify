@@ -203,7 +203,7 @@ For(list=listState,key={it.id}){item->
 }
 ```
 
-## Undetermined Part
+## Undetermined Parts
 
 ### The Node System
 
