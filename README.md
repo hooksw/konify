@@ -8,7 +8,7 @@ Konify is a high-performance, compact and highly scalable library inspired by [S
 
 You can think of functions of Konify as constructors, they are executed only once, without recomposition.
 
-**Currently, in the design stage. **
+**Currently, in the design stage.**
 
 ### Differences from Compose
 
