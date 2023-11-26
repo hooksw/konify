@@ -1,5 +1,6 @@
-#Konify
-[简体中文](https://github.com/hooksw/konify/blob/master/README-ZH.md)
+# Konify
+
+[![zh](https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87%E7%89%88%E6%9C%AC-6495ED)](https://github.com/hooksw/konify/blob/master/README-ZH.md)
 
 > The name comes from the following words: Kotlin, construct, notify
 
