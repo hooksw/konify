@@ -327,7 +327,7 @@ The callback block in the `Style` function only supports value assignment and fu
 
 And it can be extended by extension functions.
 
-**Todo:Do we need to support operations such as `val style=style1+Style{//todo}` like inline styles and class styles in CSS?**
+**Todo:Do we need to support operations such as `val style=style1+Style{//...}` like inline styles and class styles in CSS?**
 
 ## Supported Platform
 
