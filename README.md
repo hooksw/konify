@@ -215,7 +215,7 @@ We have had the following ideas:
 
    ```kotlin
    internal var currentNode:Node?=null
-   fun ComponnetA(){
+   fun ComponentA(){
      val parent=currentNode!!
      currentNode=createNode(parent)
      //function body
@@ -234,7 +234,7 @@ We have had the following ideas:
 2. **Inject the Node parameter**
 
    ```kotlin
-   fun ComponnetA(node:Node){
+   fun ComponentA(node:Node){
      val currentNode=createNode(node)
      //function body
      LaunchEffect(currentNode){
@@ -249,7 +249,7 @@ We have had the following ideas:
 3. **Inject the NodeTree parameter(like what Compose do)**
 
    ```kotlin
-   fun ComponnetA(tree:NodeTree){
+   fun ComponentA(tree:NodeTree){
      val currentNode=tree.createNode()
      //function body
      LaunchEffect(currentNode){
@@ -262,7 +262,7 @@ We have had the following ideas:
    }
    ```
 
-There is still debate. If you have any opinions or other options, please report here [https://github.com/hooksw/konify/issues/url](https://).
+There is still debate. If you have any opinions or other solutions, please report here [https://github.com/hooksw/konify/issues/url](https://).
 
 And our goal is to keep maintainability, scalability, and high performance.
 
@@ -274,7 +274,7 @@ Its use is temporarily designed as follows:
 ```kotlin
 val ContextLocalCount = ContextLocalOf(1)
 
-@View
+@Component
 fun A() {
   var counter bv signalOf(0)
   LaunchEffect{
@@ -288,7 +288,7 @@ fun A() {
   }
 }
 
-@View
+@Component
 fun B(){
   val localCount by useContext(ContextLocalCount)
   //get a signal whose init value is 0 
