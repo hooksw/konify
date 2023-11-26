@@ -14,7 +14,7 @@ Konify is a fast, compact, and highly scalable library inspired by [Solid] and [
 * need to mark stable everywhere.
 * Compose UI cannot be used in web dom.
 
-so we plan to do something like:
+so we plan to achieve the following goals:
 
 * writes like Compose, works like native view elements and avoid recompositions.
 * keep scalability so that we can adapt it to other scenes (e.g. use skia as behind-the-scenes implementation,or implement other tree-structured responsive systems)
