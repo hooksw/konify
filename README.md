@@ -262,7 +262,7 @@ We have had the following ideas:
    }
    ```
 
-There is still debate. If you have any opinions or other solutions, please report here [https://github.com/hooksw/konify/issues/url](https://).
+There is still debate. If you have any opinions or other solutions, please report here [https://github.com/hooksw/konify/issues/1](https://github.com/hooksw/konify/issues/1).
 
 And our goal is to keep maintainability, scalability, and high performance.
 
