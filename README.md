@@ -193,7 +193,7 @@ Switch {
 }
 ```
 
-In the code above, when one of stateA,stateB,stateC changes, `Switch`will check the state in order of declaration, the first callback that state value is `true` when will execute.
+In the code above, when one of stateA, stateB, stateC changes, `Switch`will check the state in order of declaration, the first callback that state value is `true` when will execute.
 
 #### For
 
