@@ -4,6 +4,9 @@
 
 Konify is a fast, compact, and highly scalable library inspired by [Solid] and [Compose] for building reactive Android, web and IOS applications using Kotlin.
 
+You can consider Konify functions as constructors, they are executed only once and **there are no recomposition**.
+
+
 **It is currently in the design phase.**
 
 ### Differences from Compose
@@ -48,6 +51,7 @@ fun Counter() {
 ```
 
 ### The responsive mechanism behind(pseudocode)
+The following code shows how the responsive system works without recompositions.
 
 ```kotlin
 //Computation代表当所依赖的任一state发生变化时，需要执行的函数（也可以叫做计算，也就是名称的由来）
