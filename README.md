@@ -340,7 +340,7 @@ And it can be extended by extension functions.
 8. (optional) Provide a mechanism to implement custom layout and view.
 9. Design and implement the routing mechanism.
 10. (optional) Design and implement the IDE plugin to enhance the development.
-11. (optional) support hot reload.
+11. (optional) Support hot reload.
 
 ## Supported Platform
 
