@@ -2,7 +2,7 @@
 
 > The name comes from kotlin, construct, notify
 
-Konify is a fast, compact, and highly scalable library inspired by [Solid] and [Compose] for building reactive Android, web and iOS applications using Kotlin.
+Konify is a fast, compact, and highly scalable library inspired by [Solid] and [Compose] for building reactive Android, web and IOS applications using Kotlin.
 
 **It is currently in the design phase.**
 
