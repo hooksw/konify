@@ -280,7 +280,7 @@ fun A() {
   LaunchEffect{
       while (true){
           delay(1000)
-          counter.value+=1
+          counter+=1
       }
   }
   ContextLocalProvider(ContextLocalCount provides counter){
