@@ -10,7 +10,9 @@ You can think of functions of Konify as constructors, they are executed only onc
 
 **Currently, in the design stage.**
 
-### Differences from Compose
+---
+
+#### Differences from Compose
 
 [Compose] is good, but still has the following issues:
 
@@ -23,7 +25,9 @@ Therefore, we plan to achieve the following goals:
 * Written like Compose, works like Native elements, no need to recompose.
 * Keep it extensible so that we can adapt it to other scenarios (e.g. using Skia as a backend implementation, or implementing other tree-structured reactive systems).
 
-## Definite part
+---
+
+## Determined part
 
 ### Overview
 
@@ -203,6 +207,8 @@ For(list=listState,key={it.id}){item->
    Text(text=item.toString())
 }
 ```
+---
+
 ## Undetermined part
 
 ### Node system
