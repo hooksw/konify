@@ -57,6 +57,7 @@ fun Counter() {
 ```
 ### Behind the responsive mechanism (pseudocode)
 The following code shows how the current reactive system works (without the need for recomposition).
+It relys on the single thread and the two-way binding.
 
 ```kotlin
 //Computation represents the function that needs to be executed when any of the dependent states changes (it can also be called calculation, which is where the name comes from)
@@ -72,7 +73,6 @@ classComputation(
       signals.forEach{
          it.observers.remove(this)
       }
-      //12. Rebind. Note that fn is textView.text=str() at this time, so signal.getValue will be called again when currentComputation is set.
       withComputation(this,fn)
    }
    val signals:MutableList<Signal> =mutableListOf()
@@ -81,10 +81,7 @@ classComputation(
 class Signal(private var backValue:Any){
    var value:Any
       get(){
-         //9. At this time computation is null, get the value directly
          if(currentComputation!=null){
-            //6. Double-binding is performed at this time
-            //13. Rebind so that the bound computation will be called again the next time the signal changes.
             currentComputation.states.add(this)
             observers.add(currentComputation)
          }
@@ -92,7 +89,6 @@ class Signal(private var backValue:Any){
       }
       set(value){
          backValue=value
-         //11. Traverse and execute computation
          observers.forEach{
             it.listener()
          }
@@ -101,7 +97,6 @@ class Signal(private var backValue:Any){
 }
 var currentComputation:Computation?=null
 
-//2. Enter inside bind
 fun bind(block:()->Unit){
    withComputation(Computation(block),block)
 }
@@ -109,11 +104,8 @@ fun bind(block:()->Unit){
 fun withComputation(computation: Computation, run: () -> Unit){
    //Save the current Computation. If there is no memo (derivedState in compose), it is usually empty.
    vallasComputation=currentComputation
-   //3. Set the current Computation and prepare for double binding
    currentComputation=computation
-   //4. Perform the first binding
    run()
-   //Restore value, in the current example, it is always null
    currentComputation=lasComputation
 }
 
@@ -121,27 +113,18 @@ fun withComputation(computation: Computation, run: () -> Unit){
 fun counter(){
    val count = Signal(0)
    Button(()->count.value.toString()){
-      //10. Call signal.getValue
       count.value=
-              //8. Enter signal.getValue
          count.value+1
    }
 }
 //In order to achieve responsiveness, we must use the compiler plug-in to convert types other than lambda types into lazy acquisition forms, so that signal.value can accurately obtain computation and bind it to each other.
 fun Button(str:()->String,onClick:()->Unit){
    val textView=TextView()
-   //7. After the binding is completed, onClick is called, that is, when count.value is changed.
    textView.onClick=onClick
-   //1. At this time, enter bind to implement two-way binding of state and computation, instead of the traditional one-way binding of signal.bind{}
    bind{
-      //5. In the callback, you can obtain the pair signal.value, which is count.value, in the form of ()->T at this time, and start binding to it, and then execute a callback
       textView.text=str()
    }
 }
-
-//ViewModel:
-//In a single-threaded scenario without computation, computation is always null, so signal.getValue does not have responsive features at this time.
-//Therefore it is best to use flow instead in viewModel
 
 ```
 ### State
