@@ -17,7 +17,7 @@ You can think of functions of Konify as constructors, they are executed only onc
 [Compose] is good, but still has the following issues:
 
 * There are performance issues in some cases, mostly related to unnecessary recompositions.
-* Needs to be marked stable everywhere.
+* Needs to be marked stable in many places.
 * Compose UI cannot be used in the Web DOM.
 
 Therefore, we plan to achieve the following goals:
