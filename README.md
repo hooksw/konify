@@ -154,7 +154,7 @@ LaunchEffect(Unit){
 In Compose we can do this:
 
 ```kotlin
-@Compose
+@Composable
 fun A(bool:Boolean){
    if(bool){
       B()
