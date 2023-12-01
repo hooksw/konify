@@ -22,7 +22,7 @@ A Component should be written as follows:
 @Component
 fun Counter() {
    var count by signalOf(1)
-   val greaterThan10 = memo{count>10}
+   val greaterThan10 = memo{ count>10 }
    LaunchEffect(greaterThan10) {
       print("the count is greater than 10")
    }
@@ -40,7 +40,7 @@ fun Counter() {
 }
 ```
 ### Behind the responsive mechanism 
-The following code shows how the current reactive system works (without the need for recomposition).
+The following code shows how the current reactive system works basically without the need for recomposition or virtual-dom.
 It relays on the single thread and the two-way binding.
 
 ```kotlin
@@ -88,7 +88,42 @@ fun Button(str: () -> String, onClick: () -> Unit) {
     }
 }
 
+
 ```
+### Function parameters
+In order for State to accurately capture the observer that should be bound currently,
+the function parameters should be converted into the form of ()->T.
+
+At the same time, in order to avoid unboxing, a special concrete type is provided for the primitive type, and an annotation is provided to generate the corresponding supplier for the value class
+
+```kotlin
+@RefiedSupplier
+value class Dp(val value:Long)
+
+@Component
+fun Parent() {
+    Child("", 0, 0.dp) {}
+}
+
+@Component
+fun Child(string: String, int: Int, dp: Dp, call: () -> Unit) {
+
+}
+
+//will be transformed by compiler plugin
+@Component
+fun Parent() {
+    Child({ "" }, IntSupplier{0},Dp.RefiedSupplier{0.dp}) {}
+}
+
+@Component
+fun Child(string: ()->String, int: IntSupplier, dp: Dp.RefiedSupplier, call: () -> Unit) {
+
+}
+
+```
+
+
 ### State
 
 There are two types of State: `Signal` (similar to `state` in Compose), `Memo` (similar to `derivedState` in Compose)
