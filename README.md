@@ -4,29 +4,13 @@
 
 > The name comes from the following words: Kotlin, construct, notify
 
-Konify is a fast, compact and highly scalable library inspired by [Solid] and [Compose] for building responsive Android, Web and iOS applications using Kotlin.
+konify is a cross-platform UI library inspired by [Solid] and [Compose]  that targets high performance, small size, and strong scalability for building responsive Android, Web DOM and iOS applications using Kotlin .
 
 You can think of functions of Konify as constructors, they are executed only once, without recomposition.
 
 **Currently, in the design stage.**
 
 ---
-
-#### Differences from Compose
-
-[Compose] is good, but still has the following issues:
-
-* There are performance issues in some cases, mostly related to unnecessary recompositions.
-* Needs to be marked stable in many places.
-* Compose UI cannot be used in the Web DOM.
-
-Therefore, we plan to achieve the following goals:
-
-* Written like Compose, works like Native elements, no need to recompose.
-* Keep it lightweight.
-* keep it extensive so we can adapt the runtime to other scenes.
-
-
 
 ## Determined part
 
@@ -43,7 +27,7 @@ fun Counter() {
       print("the count is greater than 10")
    }
    Row {
-      Text(count)
+      Text(count.toString())
       Switch {
          If(greaterThan10) {
             Button(text = "Reset", onClick = { count = 0 })
@@ -55,81 +39,59 @@ fun Counter() {
    }
 }
 ```
-### Behind the responsive mechanism (pseudocode)
+### Behind the responsive mechanism 
 The following code shows how the current reactive system works (without the need for recomposition).
-It relys on the single thread and the two-way binding.
+It relays on the single thread and the two-way binding.
 
 ```kotlin
-//Computation represents the function that needs to be executed when any of the dependent states changes (it can also be called calculation, which is where the name comes from)
-classComputation(
-   private val fn:()->Unit
-){
-   val listener={
-      //Unbind all signals before each execution of Computation to prevent repeated additions
-      //As for why the Set data structure is not used, because this can achieve automatic tracking.
-      //For example, the callback of a computation is textView.text=if(boolSignal) signal1 else signal2,
-      //When boolSignal is true, due to conditional branch execution, only boolSignal and signal1 will be bound to this computation.
-      //When boolSignal becomes false, after first unbinding and then rebinding, signal1 will no longer track this computation, but boolSignal and signal2 will track it.
-      signals.forEach{
-         it.observers.remove(this)
-      }
-      withComputation(this,fn)
-   }
-   val signals:MutableList<Signal> =mutableListOf()
+
+class Signal(private var backValue: Any) {
+    var value: Any
+        get() {
+            if (currentListener != null) {
+                observers.add(currentListener)
+            }
+            return backValue
+        }
+        set(value) {
+            backValue = value
+            observers.forEach {
+                it.listener()
+            }
+        }
+    val observers = setOf<() -> Unit>()
 }
 
-class Signal(private var backValue:Any){
-   var value:Any
-      get(){
-         if(currentComputation!=null){
-            currentComputation.states.add(this)
-            observers.add(currentComputation)
-         }
-         return backValue
-      }
-      set(value){
-         backValue=value
-         observers.forEach{
-            it.listener()
-         }
-      }
-   val observers:MutableList<Computation> =mutableListOf()
-}
-var currentComputation:Computation?=null
+var currentListener: (()->Unit)? = null
 
-fun bind(block:()->Unit){
-   withComputation(Computation(block),block)
+fun bind(block: () -> Unit) {
+    val listener=currentListener
+    currentListener=block
+    block()
+    currentListener=listener
 }
 
-fun withComputation(computation: Computation, run: () -> Unit){
-   //Save the current Computation. If there is no memo (derivedState in compose), it is usually empty.
-   vallasComputation=currentComputation
-   currentComputation=computation
-   run()
-   currentComputation=lasComputation
-}
 
 //Usage example
-fun counter(){
-   val count = Signal(0)
-   Button(()->count.value.toString()){
-      count.value=
-         count.value+1
-   }
+fun counter() {
+    val count = Signal(0)
+    Button(()->count.value.toString()){
+        count.value ++
+    }
 }
-//In order to achieve responsiveness, we must use the compiler plug-in to convert types other than lambda types into lazy acquisition forms, so that signal.value can accurately obtain computation and bind it to each other.
-fun Button(str:()->String,onClick:()->Unit){
-   val textView=TextView()
-   textView.onClick=onClick
-   bind{
-      textView.text=str()
-   }
+
+fun Button(str: () -> String, onClick: () -> Unit) {
+    val textView = TextView()
+    textView.onClick = onClick
+    bind {
+        textView.text = str()
+    }
 }
 
 ```
 ### State
 
-Similar to Compose, there are two types of State: `Signal` (similar to `state` in Compose), `Memo` (similar to `derivedState` in Compose)
+There are two types of State: `Signal` (similar to `state` in Compose), `Memo` (similar to `derivedState` in Compose)
 
 ### Effect
 
@@ -192,6 +154,54 @@ For(list=listState,key={it.id}){item->
 }
 ```
 
+### Style
+
+We use a CSS-like style system.
+
+The current design is as follows:
+
+
+```kotlin
+fun Style(callback:StyleNode.()->Unit){
+   //...
+}
+val commonStyle=Style {
+    margin:10.dp
+}
+fun Sample(){
+   Text(
+      style=commonStyle+Style{
+         width=100.dp
+         height=50.dp
+         border[Left,Right]{
+            color=Color.Red
+         }
+      }
+      ,"text"
+   )
+}
+```
+Callback blocks in `Style` functions only support value assignment and function calls, and can be extended through extension functions.
+
+### wrap UI Elements
+
+```kotlin
+@Component
+expect fun Text(text:String,style:Style)
+
+@Component
+actual fun Text(text:String,style:Style){
+    val textView=textViewFactory()
+    createNativeNode(textView){
+        bind{
+            it.text=text
+        }
+        bind{
+            it.style=fontStyle
+        }
+    }
+}
+```
 
 ## Undetermined part
 
@@ -203,7 +213,7 @@ In order to ensure the development experience, we should make the state readable
 
 We will treat special elements(Switch,For,Native UI Elements,Routing…) as special nodes, and all these nodes will construct a node tree.
 
-When multi-threaded state access is complete, we will start working on this.
+When the last plan is complete, we will start working on this.
 
 ### ContextLocal
 
@@ -239,34 +249,6 @@ fun B(){
    }
 }
 ```
-
-### Style
-
-We don't use a Modifier system, but a CSS-like style system.
-
-The current design is as follows:
-
-
-```kotlin
-fun Style(callback:StyleNode.()->Unit){
-   //...
-}
-fun Sample(){
-   Text(
-      style=Style{
-         width=100.dp
-         height=50.dp
-         border[Left,Right]{
-            color=Color.Red
-         }
-      }
-      ,"text"
-   )
-}
-```
-Callback blocks in `Style` functions only support value assignment and function calls, and can be extended through extension functions.
-
-**Q: Do we need to support operations similar to inline styles and class styles in CSS, such as `val style = style1 + Style{//...}`? **
 
 ## To-do list
 1. Determine the overall architecture, improve the core code.
