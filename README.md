@@ -4,7 +4,7 @@
 
 > The name comes from the following words: Kotlin, construct, notify
 
-Konify is a high-performance, compact and highly scalable library inspired by [Solid] and [Compose] for building responsive Android, Web and iOS applications using Kotlin.
+Konify is a fast, compact and highly scalable library inspired by [Solid] and [Compose] for building responsive Android, Web and iOS applications using Kotlin.
 
 You can think of functions of Konify as constructors, they are executed only once, without recomposition.
 
@@ -23,7 +23,8 @@ You can think of functions of Konify as constructors, they are executed only onc
 Therefore, we plan to achieve the following goals:
 
 * Written like Compose, works like Native elements, no need to recompose.
-* Keep it extensible so that we can adapt it to other scenarios (e.g. using Skia as a backend implementation, or implementing other tree-structured reactive systems).
+* Keep it lightweight.
+* keep it extensive so we can adapt the runtime to other scenes.
 
 
 
@@ -211,65 +212,15 @@ For(list=listState,key={it.id}){item->
 
 ## Undetermined part
 
+### Multi-thread state reading and writing
+
+In order to ensure the development experience, we should make the state readable and written by multiple threads, just like compose does. At present, a snapshot isolation mechanism similar to mvcc seems to be the best choice. But the specific design has not yet been determined.
+
 ### Node system
 
-This part is very important because it involves many parts: basic architecture, UI node tree, extensibility, debugging information, etc.
+We will treat special elements(Switch,For,Native UI Elements,Routing…) as special nodes, and all these nodes will construct a node tree.
 
-We have the following ideas:
-
-1. **Use global variables to manage the current node (similar to SolidJS’s approach)**
-
-   ```kotlin
-   internal var currentNode:Node?=null
-   funComponentA(){
-     val parent=currentNode!!
-     currentNode=createNode(parent)
-     //function body
-     LaunchEffect{
-       //...
-     }
-     //restore
-     currentNode=parent
-   }
-   fun LaunchEffect(block:()->Unit){
-     val node=currentNode!!
-     node.registerOnPrepare{//...}
-     node.registerOnDispose{//...}
-   }
-   ```
-2. **Inject node parameters**
-
-   ```kotlin
-   fun ComponentA(node:Node){
-     val currentNode=createNode(node)
-     //function body
-     LaunchEffect(currentNode){
-       //...
-     }
-   }
-   fun LaunchEffect(node:Node,block:()->Unit){
-     node.registerOnPrepare{//...}
-     node.registerOnDispose{//...}
-   }
-   ```
-3. **Inject node tree parameters (similar to Compose’s approach)**
-
-   ```kotlin
-   fun ComponentA(tree:NodeTree){
-     val currentNode=tree.createNode()
-     //function body
-     LaunchEffect(currentNode){
-       //...
-     }
-   }
-   fun LaunchEffect(node:Node,block:()->Unit){
-     node.registerOnPrepare{//...}
-     node.registerOnDispose{//...}
-   }
-   ```
-There is still some debate. If you have any comments or other solutions, please report them here [https://github.com/hooksw/konify/issues/1](https://github.com/hooksw/konify/issues/1).
-
-Our goal is to maintain maintainability, scalability, and high performance.
+When multi-threaded state access is complete, we will start working on this.
 
 ### ContextLocal
 
@@ -335,21 +286,22 @@ Callback blocks in `Style` functions only support value assignment and function 
 **Q: Do we need to support operations similar to inline styles and class styles in CSS, such as `val style = style1 + Style{//...}`? **
 
 ## To-do list
-1. Determine the overall architecture, improve the core code, and modify the compiler plug-in based on it.
-2. Write relevant tests.
-3. Determine the style attributes to be implemented, build its platform implementation, and design its DSL.
-4. Design and implement event systems, such as gesture events.
-5. Implement basic UI components: Text, Image, TextInput, FlexLayout, FrameLayout, Buttons.
-6. Design and implement animation system.
-7. Implement advanced UI components: LazyLayout, LazyList, Pager, AsyncImage.
-8. (Optional) Provide mechanisms for implementing custom layouts and views.
-9. Design and implement routing mechanism.
-10. (Optional) Design and implement IDE plug-ins to enhance development.
-11. (Optional) Support hot reload.
+1. Determine the overall architecture, improve the core code.
+2. Modify the compiler plug-in based on it 
+3. Write relevant tests.
+4. Determine the style attributes to be implemented, build its platform implementation, and design its DSL.
+5. Design and implement event systems, such as gesture events.
+6. Implement basic UI components: Text, Image, TextInput, FlexLayout, FrameLayout, Buttons.
+7. Design and implement animation system.
+8. Implement advanced UI components: LazyLayout, LazyList, Pager, AsyncImage.
+9. (Optional) Provide mechanisms for implementing custom layouts and views.
+10. Design and implement routing mechanism.
+11. (Optional) Design and implement IDE plug-ins to enhance development.
+12. (Optional) Support hot reload.
 
 ## Supported platforms
 
-We plan to support Android and Web DOM first (the author can't afford a Mac).
+We plan to support Android and Web DOM first, if you are interested in it, welcome to contribute for any other platform.
 
 [compose]: https://developer.android.com/jetpack/compose
 [kmm]: https://kotlinlang.org/lp/mobile/
