@@ -94,7 +94,7 @@ fun Button(str: () -> String, onClick: () -> Unit) {
 In order for State to accurately capture the observer that should be bound currently,
 the function parameters should be converted into the form of ()->T.
 
-At the same time, in order to avoid unboxing, a special concrete type is provided for the primitive type, and an annotation is provided to generate the corresponding supplier for the value class
+At the same time, in order to avoid autoboxing, a special Supplier type is provided for the primitive type, and an annotation is provided to generate the corresponding supplier for the value class
 
 ```kotlin
 @RefiedSupplier
