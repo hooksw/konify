@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "2.0.0-Beta1"
+    kotlin("plugin.serialization") version "2.0.0-Beta2"
     id("com.android.library")
 }
 
@@ -15,12 +15,11 @@ subprojects {
 allprojects {
 
     kotlin {
-        androidTarget {
+        androidTarget{
             compilations.all {
                 kotlinOptions {
-                    jvmTarget = "1.8"
+                    jvmTarget = "11"
                     freeCompilerArgs += "-Xjvm-default=all"
-
                 }
             }
         }
@@ -37,12 +36,12 @@ allprojects {
 
         js(IR) {
             browser {
-                commonWebpackConfig(Action {
+                commonWebpackConfig {
                     cssSupport {
                         enabled.set(true)
                         mode.set("inline")
                     }
-                })
+                }
             }
         }
 
@@ -51,7 +50,7 @@ allprojects {
                 dependencies {
                     implementation( "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
                     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-                    implementation("androidx.collection:collection:1.4.0-alpha02")
+                    api("androidx.collection:collection:1.4.0-beta02")
                 }
             }
             getByName("commonTest") {
@@ -67,11 +66,21 @@ allprojects {
                     implementation("androidx.core:core-ktx:1.12.0")
                 }
             }
+            getByName("androidUnitTest") {
+                dependencies {
+                    val mockkVersion="1.13.8"
+                    implementation( "io.mockk:mockk-android:${mockkVersion}")
+                    implementation( "io.mockk:mockk-agent:${mockkVersion}")
+                }
+            }
 
             getByName("jsMain") {
                 dependencies {
                     api("org.jetbrains.kotlinx:kotlinx-html-js:0.9.0")
                 }
+            }
+            all {
+                languageSettings.optIn("io.github.hooksw.konify.runtime.annotation.InternalUse")
             }
         }
     }
@@ -79,15 +88,18 @@ allprojects {
     android {
         namespace = "com.example.ui.api"
         compileSdk = 32
-
         defaultConfig {
             minSdk = 26
         }
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+
+        }
     }
 }
-
 dependencies {
     api(project(":api:runtime"))
     api(project(":api:foundation"))
-    api(project(":api:ui"))
+    api(project(":api:ui-view"))
 }

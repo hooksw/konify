@@ -1,7 +1,9 @@
 package io.github.hooksw.konify.runtime.signal
 
-import io.github.hooksw.konify.runtime.utils.assertOnMainThread
-import io.github.hooksw.konify.runtime.utils.fastForEach
+import io.github.hooksw.konify.runtime.utils.*
+import io.github.hooksw.konify.runtime.utils.Lock
+import io.github.hooksw.konify.runtime.utils.isMainThread
+import io.github.hooksw.konify.runtime.utils.post2MainThread
 
 internal class ObservedSignal<T>(
     initialValue: T,
@@ -9,20 +11,27 @@ internal class ObservedSignal<T>(
 ) : MutableSignal<T>, StateObserver {
 
     override val observers: MutableList<Computation> = mutableListOf()
-
+    private val lock = Lock()
     override var value: T = initialValue
         get() {
-            assertOnMainThread()
-            autoTrack()
-            return field
+            if (isMainThread()) {
+                autoTrack()
+            }
+            return lock.read { field }
+
         }
         set(value) {
-            assertOnMainThread()
-            if (equality.compare(field, value)) {
-                return
+            lock.write {
+                if (equality.compare(field, value)) {
+                    return
+                }
+                field = value
             }
-            field = value
-            dispatchUpdate()
+            if(isMainThread()){
+                dispatchUpdate()
+            }else{
+                post2MainThread { dispatchUpdate() }
+            }
         }
 
     private fun dispatchUpdate() {

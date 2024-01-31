@@ -2,7 +2,7 @@ package io.github.hooksw.konify.runtime
 
 import io.github.hooksw.konify.runtime.annotation.Component
 import io.github.hooksw.konify.runtime.annotation.ReadOnly
-import io.github.hooksw.konify.runtime.signal.Nodes
+import io.github.hooksw.konify.runtime.signal.CurrentNode
 import io.github.hooksw.konify.runtime.signal.createComputation
 import io.github.hooksw.konify.runtime.signal.untrack
 import kotlinx.coroutines.CoroutineScope
@@ -67,7 +67,7 @@ private fun effectCommon(
     block: () -> Unit,
     onDispose: () -> Unit
 ) {
-    val node = Node
+    val node = CurrentNode
     node?.addOnMount(block)
     node?.addOnDispose(onDispose)
     val keys = keys as Array<() -> Any>

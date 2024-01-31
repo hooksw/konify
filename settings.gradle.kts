@@ -21,7 +21,7 @@ dependencyResolutionManagement {
 include(":api")
 include(":api:runtime")
 include(":api:foundation")
-include(":api:ui")
+include(":api:ui-view")
 
 
 include(":sample")

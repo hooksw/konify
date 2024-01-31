@@ -1,6 +1,10 @@
 package io.github.hooksw.konify.runtime.signal
 
-import io.github.hooksw.konify.runtime.utils.assertOnMainThread
+import io.github.hooksw.konify.runtime.annotation.InternalUse
+import io.github.hooksw.konify.runtime.utils.*
+import io.github.hooksw.konify.runtime.utils.Lock
+import io.github.hooksw.konify.runtime.utils.isMainThread
+import io.github.hooksw.konify.runtime.utils.post2MainThread
 
 private object NOT_INITIAL
 
@@ -10,24 +14,31 @@ internal class Memo<T>(
 ) : Signal<T>, Computation(), StateObserver {
     override val observers: MutableList<Computation> = ArrayList(5)
     private var _field: T = NOT_INITIAL as T
+    private val lock = Lock()
     override var value: T
         get() {
-            assertOnMainThread()
-            autoTrack()
-
-            runWithComputations(this) {
-                if (_field === NOT_INITIAL) value = getValue()
+            if(isMainThread()){
+                autoTrack()
+                runWithComputations(this) {
+                    if (_field === NOT_INITIAL) value = getValue()
+                }
             }
 
-            return _field
+            return lock.read {
+                _field
+            }
         }
         private set(value) {
-            if (equality.compare(value, _field)) {
-                return
+            lock.write {
+                if (equality.compare(value, _field)) {
+                    return
+                }
+                _field = value
             }
-            _field = value
-            observers.forEach {
-                pushUpdate(it)
+            if(isMainThread()){
+                dispatchUpdate()
+            }else{
+                post2MainThread { dispatchUpdate() }
             }
         }
 
@@ -37,7 +48,14 @@ internal class Memo<T>(
         value = getValue()
 
     }
+
+    private fun dispatchUpdate() {
+        observers.fastForEach {
+            pushUpdate(it)
+        }
+    }
 }
+
 
 fun <T> memo(equality: Equality<T> = structuralEquality(), getValue: () -> T): Signal<T> {
     return Memo(equality, getValue).apply {

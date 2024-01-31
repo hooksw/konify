@@ -20,12 +20,12 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.platform.jvm.isJvm
 import org.jetbrains.kotlin.util.OperatorNameConventions
 
-
 class KonifyParamsTransformer(
     context: IrPluginContext,
+    private val skipSuspendFunction: Boolean,
+    private val skipSimpleFunction: Boolean,
 ) : AbstractCommonLower(context) {
 
-    //    private var inlineLambdaInfo = KonifyInlineLambdaLocator(context)
     private val transformedFunctionSet = mutableSetOf<IrSimpleFunction>()
 
     private val transformedFunctions: MutableMap<IrSimpleFunction, IrSimpleFunction> =
@@ -36,7 +36,7 @@ class KonifyParamsTransformer(
 
         module.transformChildrenVoid(this)
 
-        val typeRemapper = ComposerTypeRemapper(context,DeepCopySymbolRemapper())
+        val typeRemapper = ComposerTypeRemapper(context, DeepCopySymbolRemapper())
         val transformer = DeepCopyIrTreeWithRemappedComposableTypes(
             context,
             typeRemapper
@@ -93,10 +93,11 @@ class KonifyParamsTransformer(
                 val shouldSkip =
                     param.type.hasStatelessAnnotation() ||
                             ((param.type as? IrSimpleType)?.classifier?.owner as? IrClass)?.hasStatelessAnnotation() == true ||
-                            param.type.isSuspendFunctionTypeOrSubtype() || param.type.isFunctionTypeOrSubtype()
+                            skipSuspendFunction&&param.type.isSuspendFunctionTypeOrSubtype() || skipSimpleFunction&&param.type.isFunctionTypeOrSubtype()
                 if (!shouldSkip) {
+                    changedList += param
                     if (param.isVararg && param.varargElementType?.isFunctionTypeOrSubtype() != true) {
-                        changedList += param
+
                         param.copyTo(
                             fn,
                             name = param.name,
@@ -134,7 +135,6 @@ class KonifyParamsTransformer(
                 .zip(fn.explicitParameters)
                 .toMap()
             functionsWithChangedParams[fn] = changedList.map { it.name }
-//            inlineLambdaInfo.scan(fn)
             fn.transformChildrenVoid(object : IrElementTransformerVoid() {
                 override fun visitExpression(expression: IrExpression): IrExpression {
                     if (expression is IrGetValue) {
@@ -213,6 +213,7 @@ class KonifyParamsTransformer(
         val ownerFn = when {
             isKonifyLambdaInvoke() ->
                 symbol.owner.lambdaInvoke()
+
             symbol.owner.hasKonifyAnnotation() ->
                 symbol.owner.transformedIfNeeded()
 
@@ -236,9 +237,9 @@ class KonifyParamsTransformer(
             for (i in 0 until valueArgumentsCount) {
                 var arg = getValueArgument(i)
                 if (arg != null) {
-                    val changedList=functionsWithChangedParams[symbol.owner]
-                    if(changedList!=null&&changedList.contains(symbol.owner.valueParameters[i].name)){
-                        arg=arg.lazy(context)
+                    val changedList = functionsWithChangedParams[symbol.owner]
+                    if (changedList != null && changedList.contains(symbol.owner.valueParameters[i].name)) {
+                        arg = arg.lazy(context)
                     }
                     it.putValueArgument(i, arg)
                 }

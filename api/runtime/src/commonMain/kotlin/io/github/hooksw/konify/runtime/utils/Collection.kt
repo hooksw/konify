@@ -15,7 +15,7 @@ inline fun <T> List<T>.fastForEach(action: (item: T) -> Unit) {
 
 
 @OptIn(ExperimentalContracts::class)
-internal inline fun <T> List<T>.fastForEachIndex(action: (index: Int, item: T) -> Unit) {
+inline fun <T> List<T>.fastForEachIndex(action: (index: Int, item: T) -> Unit) {
     contract {
         callsInPlace(action)
     }

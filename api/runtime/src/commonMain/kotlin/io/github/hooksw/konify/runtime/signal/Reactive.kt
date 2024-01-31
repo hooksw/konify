@@ -1,8 +1,10 @@
 package io.github.hooksw.konify.runtime.signal
 
+import io.github.hooksw.konify.runtime.annotation.InternalUse
 import io.github.hooksw.konify.runtime.node.Node
 import io.github.hooksw.konify.runtime.utils.assertOnMainThread
 import io.github.hooksw.konify.runtime.utils.fastForEach
+import kotlin.jvm.JvmField
 
 
 internal interface StateObserver {
@@ -52,14 +54,15 @@ internal inline fun batch(call: () -> Unit) {
 }
 
 
-//stack
-
+@JvmField
 internal var CurrentNode: Node? = null
 
+@JvmField
 @PublishedApi
 internal var CurrentListener: Computation? = null
 
-internal inline fun createComputation(crossinline call: () -> Unit): Computation {
+
+internal fun createComputation(call: () -> Unit): Computation {
     val listener = object : Computation() {
 
         override fun run() {
@@ -73,8 +76,11 @@ internal inline fun createComputation(crossinline call: () -> Unit): Computation
     node?.addComputations(listener)
     return listener
 }
-
-internal inline fun runWithComputations(computation: Computation, run: () -> Unit) {
+@InternalUse
+fun bind(call: () -> Unit){
+    createComputation(call).run()
+}
+internal fun runWithComputations(computation: Computation, run: () -> Unit) {
     val listener = CurrentListener
     CurrentListener = computation
     run()

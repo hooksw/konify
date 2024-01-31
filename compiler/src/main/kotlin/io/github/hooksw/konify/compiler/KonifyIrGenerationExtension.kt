@@ -8,8 +8,9 @@ import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
 import org.jetbrains.kotlin.platform.jvm.isJvm
 
 class KonifyIrGenerationExtension(
+    private val skipSuspendFunction: Boolean = false,
+    private val skipSimpleFunction: Boolean = false,
     private val validateIr: Boolean = false,
-    private val generateFunctionKeyMetaClasses: Boolean = false,
 ) : IrGenerationExtension {
     override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
 

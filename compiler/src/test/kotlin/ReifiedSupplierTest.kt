@@ -1,23 +1,11 @@
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import io.github.hooksw.konify.compiler.fir.GenerateReifiedSupplier
-import io.github.hooksw.konify.compiler.fir.KonifyFirExtensionRegistrar
-import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
-import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
-import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrarAdapter
-import org.jetbrains.kotlin.ir.builders.declarations.addValueParameter
-import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
-import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.IrFunctionExpression
-import org.jetbrains.kotlin.ir.util.defaultType
-import org.jetbrains.kotlin.ir.visitors.transformChildrenVoid
-import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.name.Name
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -56,7 +44,7 @@ class ReifiedSupplierTest {
             inheritClassPath = true
             messageOutputStream = System.out // see diagnostics in real time
         }.compile()
-        assertEquals(result.exitCode , KotlinCompilation.ExitCode.OK)
-    }
+        assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
+
     }
 }

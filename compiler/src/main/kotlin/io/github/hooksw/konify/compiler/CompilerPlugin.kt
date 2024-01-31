@@ -1,6 +1,8 @@
 package io.github.hooksw.konify.compiler
 
 import io.github.hooksw.konify.compiler.conf.KEY_ENABLED
+import io.github.hooksw.konify.compiler.conf.KEY_SkipSimpleFunction
+import io.github.hooksw.konify.compiler.conf.KEY_SkipSuspendFunction
 import io.github.hooksw.konify.compiler.fir.KonifyFirExtensionRegistrar
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
@@ -18,9 +20,14 @@ public class KonifyComponentRegistrar : CompilerPluginRegistrar() {
 
     override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         if (configuration[KEY_ENABLED] == false) return
+        val skipSuspendFunction = configuration[KEY_SkipSuspendFunction] ?: false
+        val skipSimpleFunction = configuration[KEY_SkipSimpleFunction] ?: false
 
         IrGenerationExtension.registerExtension(
-            KonifyIrGenerationExtension()
+            KonifyIrGenerationExtension(
+                skipSuspendFunction,
+                skipSimpleFunction
+            )
         )
 
         FirExtensionRegistrarAdapter.registerExtension(

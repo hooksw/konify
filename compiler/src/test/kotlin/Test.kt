@@ -7,7 +7,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Test {
-    @Compo
     @Test
     @OptIn(ExperimentalCompilerApi::class)
     fun test() {

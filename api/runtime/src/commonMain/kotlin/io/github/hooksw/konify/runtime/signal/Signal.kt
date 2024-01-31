@@ -28,3 +28,13 @@ fun <T> signalOf(
         equality = equality
     )
 }
+
+class Constant<T>(provider:()->T):Signal<T>{
+    override val value: T by lazy(provider)
+}
+
+fun <T> constantOf(
+    initialValue:()-> T,
+): Signal<T> {
+    return Constant(initialValue)
+}
