@@ -2,47 +2,43 @@ package io.github.hooksw.konify.ui.style
 
 import android.graphics.drawable.GradientDrawable
 import android.view.View
-import io.github.hooksw.konify.foundation.UIElementHolder
 import io.github.hooksw.konify.foundation.graphics.Color
 import io.github.hooksw.konify.foundation.graphics.orElse
-import io.github.hooksw.konify.foundation.style.DecorationStyleAttr
-import io.github.hooksw.konify.foundation.style.DecorationStyleNode
-import io.github.hooksw.konify.foundation.style.Style
+import io.github.hooksw.konify.foundation.modifier.DecorationStyleNode
+import io.github.hooksw.konify.foundation.modifier.Style
 import io.github.hooksw.konify.foundation.unit.Dp
 import io.github.hooksw.konify.foundation.unit.dp
 import io.github.hooksw.konify.foundation.unit.takeOrElse
 
-internal class AndroidDecorationStyleNode(override val style: Style) : DecorationStyleNode<View> {
-    override val attr: DecorationStyleAttr = DecorationStyleAttr()
-
-    override fun update(nativeView: UIElementHolder<View>) {
+internal class AndroidDecorationStyleNode(override val style: Style) : DecorationStyleNode() {
+    override fun onUpdate(view: Any) {
         with(style.density) {
-            val view = nativeView.element
-            val blr = attr.radius.bottomLeft.or0().toPx()
-            val brr = attr.radius.bottomRight.or0().toPx()
-            val tlr = attr.radius.topLeft.or0().toPx()
-            val trr = attr.radius.topRight.or0().toPx()
+            view as View
+            val blr = finalAttr.radius.bottomLeft.or0().toPx()
+            val brr = finalAttr.radius.bottomRight.or0().toPx()
+            val tlr = finalAttr.radius.topLeft.or0().toPx()
+            val trr = finalAttr.radius.topRight.or0().toPx()
             if (view is DecorationHandler) {
                 view.setBottomLeftRadius(blr)
                 view.setBottomRightRadius(brr)
                 view.setTopLeftRadius(tlr)
                 view.setTopRightRadius(trr)
-                view.setBorderWith(attr.borderWith)
-                view.setBorderColor(attr.borderColor)
-                view.setBackgroundColor(attr.backgroundColor)
+                view.setBorderWith(finalAttr.borderWith)
+                view.setBorderColor(finalAttr.borderColor)
+                view.setBackgroundColor(finalAttr.backgroundColor)
                 return
             }
-            if (attr.backgroundColor == Color.Unspecified &&
-                attr.borderWith == Dp.Unspecified
+            if (finalAttr.backgroundColor == Color.Unspecified &&
+                finalAttr.borderWith == Dp.Unspecified
             ) {
                 nativeView.element.background = null
             } else {
-                drawable.setColor(attr.backgroundColor.orElse { Color.Transparent }.argb)
+                drawable.setColor(finalAttr.backgroundColor.orElse { Color.Transparent }.argb)
                 drawable.setStroke(
-                    attr.borderWith.or0().roundToPx(),
-                    attr.borderColor.orElse { Color.Black }.argb
+                    finalAttr.borderWith.or0().roundToPx(),
+                    finalAttr.borderColor.orElse { Color.Black }.argb
                 )
-                val bw = attr.borderWith.roundToPx()
+                val bw = finalAttr.borderWith.roundToPx()
                 if (bw > 0) {
                     view.setPadding(
                         view.paddingLeft + bw,

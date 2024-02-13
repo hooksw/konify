@@ -1,14 +1,14 @@
 plugins {
-    kotlin("jvm") version "2.0.0-Beta2"
+    alias(libs.plugins.kotlin.jvm)
 }
 
 dependencies {
     compileOnly(project(":api:runtime"))
-    compileOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.0.0-Beta2")
+    compileOnly(libs.kotlin.compilerEmbeddable)
 
 //    testImplementation("com.github.tschuchortdev:kotlin-compile-testing:1.5.0")
-    testImplementation("dev.zacsweers.kctfork:core:0.4.0")
-    testImplementation(kotlin("test"))
+    testImplementation(libs.kcp.test)
+    testImplementation(libs.kotlin.test)
 }
 
 tasks.test {

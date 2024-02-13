@@ -2,33 +2,28 @@ package io.github.hooksw.konify.ui.style
 
 import android.view.View
 import android.view.ViewGroup.LayoutParams
-import io.github.hooksw.konify.foundation.UIElementHolder
-import io.github.hooksw.konify.foundation.geometry.Match
-import io.github.hooksw.konify.foundation.geometry.Wrap
-import io.github.hooksw.konify.foundation.style.SizeStyleAttr
-import io.github.hooksw.konify.runtime.style.SizeStyleNode
-import io.github.hooksw.konify.foundation.style.Style
+import io.github.hooksw.konify.foundation.modifier.SizeStyleNode
+import io.github.hooksw.konify.foundation.modifier.Style
 import io.github.hooksw.konify.foundation.unit.Dp
 import io.github.hooksw.konify.foundation.unit.coerceIn
 import io.github.hooksw.konify.foundation.unit.takeOrElse
 
-class AndroidSizeStyleNode(override val style: Style) :
-    io.github.hooksw.konify.runtime.style.SizeStyleNode<View> {
-    override val attr: SizeStyleAttr = SizeStyleAttr()
+class AndroidSizeStyleNode(override val style: Style) : SizeStyleNode() {
 
-    override fun update(nativeView: UIElementHolder<View>) {
+    override fun onUpdate(view: Any) {
+        view as View
         with(style.density) {
-            nativeView.element.apply {
-                layoutParams.width = attr.width.intrinsicOr(
-                    (attr.width.coerceIn(
-                        attr.minWidth.takeOrElse { Dp(Float.MIN_VALUE) },
-                        attr.maxWidth.takeOrElse { Dp(Float.MAX_VALUE) }
+            view.apply {
+                layoutParams.width = finalAttr.width.intrinsicOr(
+                    (finalAttr.width.coerceIn(
+                        finalAttr.minWidth.takeOrElse { Dp(Float.MIN_VALUE) },
+                        finalAttr.maxWidth.takeOrElse { Dp(Float.MAX_VALUE) }
                     )).roundToPx()
                 )
-                layoutParams.height = attr.height.intrinsicOr(
-                    (attr.height.coerceIn(
-                        attr.minHeight.takeOrElse { Dp(Float.MIN_VALUE) },
-                        attr.maxHeight.takeOrElse { Dp(Float.MAX_VALUE) }
+                layoutParams.height = finalAttr.height.intrinsicOr(
+                    (finalAttr.height.coerceIn(
+                        finalAttr.minHeight.takeOrElse { Dp(Float.MIN_VALUE) },
+                        finalAttr.maxHeight.takeOrElse { Dp(Float.MAX_VALUE) }
                     )).roundToPx()
                 )
                 requestLayout()

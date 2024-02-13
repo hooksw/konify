@@ -1,9 +1,9 @@
 package io.github.hooksw.konify.ui.style
 
 import io.github.hooksw.konify.foundation.UIElementHolder
-import io.github.hooksw.konify.foundation.style.SizeStyleAttr
+import io.github.hooksw.konify.foundation.modifier.SizeStyleAttr
 import io.github.hooksw.konify.runtime.style.SizeStyleNode
-import io.github.hooksw.konify.foundation.style.Style
+import io.github.hooksw.konify.foundation.modifier.Style
 import io.github.hooksw.konify.foundation.unit.isSpecified
 import org.w3c.dom.HTMLElement
 

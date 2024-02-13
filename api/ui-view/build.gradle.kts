@@ -1,3 +1,6 @@
+plugins {
+    id("build.KmpCommon")
+}
 
 kotlin {
     sourceSets {

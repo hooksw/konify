@@ -2,13 +2,12 @@ package io.github.hooksw.konify.ui.style
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import io.github.hooksw.konify.foundation.graphics.Color
-import io.github.hooksw.konify.foundation.style.BorderStyle
-import io.github.hooksw.konify.foundation.style.ConstraintHandler
-import io.github.hooksw.konify.foundation.style.StyleImpl
+import io.github.hooksw.konify.foundation.modifier.BorderStyle
+import io.github.hooksw.konify.foundation.modifier.ConstraintHandler
+import io.github.hooksw.konify.foundation.modifier.StyleImpl
 import io.github.hooksw.konify.foundation.unit.Dp
 
 open class AndroidStyleImpl : StyleImpl<View>() {

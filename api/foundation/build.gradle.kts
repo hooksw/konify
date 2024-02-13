@@ -1,3 +1,7 @@
+plugins {
+    id("build.KmpCommon")
+}
+
 kotlin {
     sourceSets {
         getByName("commonMain") {

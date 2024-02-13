@@ -1,6 +1,5 @@
 package io.github.hooksw.konify.runtime.signal
 
-import io.github.hooksw.konify.runtime.annotation.InternalUse
 import io.github.hooksw.konify.runtime.utils.*
 import io.github.hooksw.konify.runtime.utils.Lock
 import io.github.hooksw.konify.runtime.utils.isMainThread
