@@ -2,8 +2,8 @@ package io.github.hooksw.konify.ui.style
 
 import android.view.View
 import io.github.hooksw.konify.foundation.UIElementHolder
-import io.github.hooksw.konify.foundation.modifier.PaddingAttr
-import io.github.hooksw.konify.foundation.modifier.PaddingElement
+import io.github.hooksw.konify.foundation.modifier.style.PaddingAttr
+import io.github.hooksw.konify.foundation.modifier.style.PaddingElement
 import io.github.hooksw.konify.foundation.modifier.Style
 
 class AndroidPaddingStyleNode(override val style: Style) : PaddingElement<View> {

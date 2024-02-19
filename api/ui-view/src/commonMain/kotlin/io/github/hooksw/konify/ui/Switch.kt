@@ -3,7 +3,7 @@ package io.github.hooksw.konify.ui
 import io.github.hooksw.konify.runtime.annotation.Component
 import io.github.hooksw.konify.runtime.annotation.ReadOnly
 import io.github.hooksw.konify.runtime.node.createNode
-import io.github.hooksw.konify.runtime.signal.bind
+import io.github.hooksw.konify.runtime.reactive.bind
 import io.github.hooksw.konify.runtime.utils.fastForEachIndex
 
 interface SwitchScope {

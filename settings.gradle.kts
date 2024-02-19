@@ -22,9 +22,11 @@ dependencyResolutionManagement {
 
 include(":api:runtime")
 include(":api:foundation")
+include(":api:foundation:layout")
 include(":api:ui-view")
 include(":layout-compute")
 
 include(":compiler")
 
 include(":sample:android")
+include(":api:foundation:layout")

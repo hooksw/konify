@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import io.github.hooksw.konify.foundation.graphics.Color
-import io.github.hooksw.konify.foundation.modifier.BorderStyle
+import io.github.hooksw.konify.foundation.modifier.style.BorderStyle
 import io.github.hooksw.konify.foundation.modifier.ConstraintHandler
 import io.github.hooksw.konify.foundation.modifier.StyleImpl
 import io.github.hooksw.konify.foundation.unit.Dp

@@ -1,5 +1,5 @@
-import io.github.hooksw.konify.runtime.signal.bind
-import io.github.hooksw.konify.runtime.signal.signalOf
+import io.github.hooksw.konify.runtime.reactive.bind
+import io.github.hooksw.konify.runtime.reactive.signalOf
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue

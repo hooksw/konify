@@ -1,13 +1,21 @@
 package io.github.hooksw.konify.foundation.modifier
 
+import io.github.hooksw.konify.runtime.utils.fastForEach
+
 interface ModifierHandler {
     fun handle(modifier: Modifier)
+    fun onHandleFinish(modifier: Modifier) {
+        (modifier as? ModifierImpl)?.foreachElement {
+            if (it is AttrElement<*>) {
+                it.dirty = false
+            }
+        }
+    }
 }
 
 interface Modifier {
     interface Element {
         val modifier: Modifier
-        var next: Element?
     }
 
     companion object : Modifier {
@@ -17,14 +25,23 @@ interface Modifier {
     }
 }
 
-internal class ModifierImpl(val first: Modifier.Element) : Modifier {
-    internal var last: Modifier.Element = first
-    lateinit var handler: ModifierHandler
+internal class ModifierImpl(private val first: Modifier.Element) : Modifier {
+    private val eleList = mutableListOf(first)
+
+    fun appendElement(element: Modifier.Element) {
+        eleList.add(element)
+    }
+
+    inline fun foreachElement(call: (Modifier.Element) -> Unit) {
+        eleList.fastForEach(call)
+    }
+
+    var handler: ModifierHandler? = null
 }
 
 internal infix fun Modifier.append(element: Modifier.Element): Modifier {
     return if (this == Modifier) Modifier.initialWith(element)
-    else (this as ModifierImpl).apply { element.next = element; last = element }
+    else (this as ModifierImpl).apply { appendElement(element) }
 }
 
 
@@ -33,27 +50,24 @@ internal interface StaticElement : Modifier.Element {
 }
 
 internal interface ObserverElement : Modifier.Element {
-    fun observeCall()
+    val observeCall: () -> Unit
 }
 
 abstract class AttrElement<T>(override val modifier: Modifier, val update: () -> Unit) :
     ObserverElement {
-    override var next: Modifier.Element? = null
-    var dirty: Boolean = false
-    abstract fun createAttr(): T
+    internal var dirty: Boolean = false
+    internal abstract fun createAttr(): T
     internal val finalAttr: T by lazy(LazyThreadSafetyMode.NONE) { createAttr() }
     val activeAttr: T by lazy(LazyThreadSafetyMode.NONE) { createAttr() }
-    abstract fun T.updateFrom(other: T)
+    internal abstract fun T.updateFrom(other: T)
 
-
-    final override fun observeCall() {
+    final override val observeCall: () -> Unit = {
         update()
-        if (finalAttr == activeAttr) {
-            return
-        }
-        if (!dirty) {
-            dirty = true
-            (modifier as? ModifierImpl)?.handler?.handle(modifier)
+        if (finalAttr != activeAttr) {
+            if (!dirty) {
+                dirty = true
+                (modifier as? ModifierImpl)?.handler?.handle(modifier)
+            }
         }
     }
 }

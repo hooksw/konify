@@ -2,9 +2,9 @@ package io.github.hooksw.konify.runtime
 
 import io.github.hooksw.konify.runtime.annotation.Component
 import io.github.hooksw.konify.runtime.annotation.ReadOnly
-import io.github.hooksw.konify.runtime.signal.CurrentNode
-import io.github.hooksw.konify.runtime.signal.createComputation
-import io.github.hooksw.konify.runtime.signal.untrack
+import io.github.hooksw.konify.runtime.reactive.CurrentNode
+import io.github.hooksw.konify.runtime.reactive.createComputation
+import io.github.hooksw.konify.runtime.reactive.untrack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

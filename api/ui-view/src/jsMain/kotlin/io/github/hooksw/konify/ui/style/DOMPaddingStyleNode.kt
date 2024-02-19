@@ -1,8 +1,8 @@
 package io.github.hooksw.konify.ui.style
 
 import io.github.hooksw.konify.foundation.UIElementHolder
-import io.github.hooksw.konify.foundation.modifier.PaddingAttr
-import io.github.hooksw.konify.foundation.modifier.PaddingElement
+import io.github.hooksw.konify.foundation.modifier.style.PaddingAttr
+import io.github.hooksw.konify.foundation.modifier.style.PaddingElement
 import io.github.hooksw.konify.foundation.modifier.Style
 import org.w3c.dom.HTMLElement
 

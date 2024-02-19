@@ -1,13 +1,12 @@
 package io.github.hooksw.konify.ui
 
 import io.github.hooksw.konify.foundation.UIElementHolder
-import io.github.hooksw.konify.runtime.node.Node
-import io.github.hooksw.konify.runtime.signal.bind
+import io.github.hooksw.konify.runtime.node.NodeImpl
+import io.github.hooksw.konify.runtime.reactive.bind
 import io.github.hooksw.konify.ui.platform.CurrentViewNode
 
-abstract class ViewNode<T> : Node(), UIElementHolder<T> {
+abstract class ViewNode<T> : NodeImpl(), UIElementHolder<T> {
 
-    object Release : Event()
 
 
     // -------- Hierarchy --------
@@ -15,7 +14,7 @@ abstract class ViewNode<T> : Node(), UIElementHolder<T> {
 
     private val childViewNodes: MutableList<ViewNode<T>> = mutableListOf()
 
-    override fun onCreate(parent: Node) {
+    override fun onCreate(parent: NodeImpl) {
         super.onCreate(parent)
         parentViewNode = CurrentViewNode
         parentViewNode.element.addChild(element)

@@ -1,10 +1,10 @@
 package io.github.hooksw.konify.runtime.context
 
 import io.github.hooksw.konify.runtime.annotation.Component
-import io.github.hooksw.konify.runtime.signal.CurrentNode
-import io.github.hooksw.konify.runtime.signal.Signal
-import io.github.hooksw.konify.runtime.signal.constantOf
-import io.github.hooksw.konify.runtime.signal.memo
+import io.github.hooksw.konify.runtime.reactive.CurrentNode
+import io.github.hooksw.konify.runtime.reactive.Signal
+import io.github.hooksw.konify.runtime.reactive.constantOf
+import io.github.hooksw.konify.runtime.reactive.memo
 
 // -------- ContextLocal --------
 

@@ -1,5 +1,5 @@
 plugins {
-    id("build.KmpCommon")
+    id("build.KmpPureLogic")
 }
 
 kotlin {
